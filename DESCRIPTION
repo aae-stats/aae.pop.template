@@ -1,0 +1,31 @@
+Package: aae.pop.templates
+Type: Package
+Title: Template Population Dynamics Models
+Version: 0.0.0.9000
+Date: 2020-12-08
+Author: c(
+  person(given = "Jian",
+         family = "Yen",
+         role = c("aut", "cre"),
+         email = "jdl.yen@gmail.com"),
+  person(given = "Arthur Rylah Institute for Environmental Research",
+         role = c("cph", "fnd"))
+  )
+Maintainer: Jian Yen <jdl.yen@gmail.com>
+Description: Template population dynamics models for use with the aae.pop
+  package.
+License: Apache License 2.0
+URL: https://aae-stats/github.io/aae.pop.templates, https://github.com/aae-stats/aae.pop.templates
+BugReports: https://github.com/aae-stats/aae.pop.templates/issues
+Encoding: UTF-8
+LazyData: true
+Depends:
+    R (>= 3.0)
+Imports:
+    stats
+Suggests:
+    knitr,
+    testthat,
+    covr,
+    rmarkdown
+VignetteBuilder: knitr
