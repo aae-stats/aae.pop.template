@@ -41,7 +41,7 @@ get_template <- function(sp, ...) {
   arg_list <- list(...)
 
   # draw up relevant parameters based on corrected species name
-  sp <- check_species(sp)
+  sp <- check_species_template(sp)
   all_parameters <- do.call(get(paste0("template_", sp)), arg_list)
 
   # return collated dynamics object
@@ -51,7 +51,7 @@ get_template <- function(sp, ...) {
 
 # internal function: check whether a species has a corresponding
 #   population model template
-check_species <- function(x) {
+check_species_template <- function(x) {
 
   # currently implemented species
   sp_list <- c("murray_cod", "macquarie_perch")

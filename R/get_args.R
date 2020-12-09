@@ -40,7 +40,7 @@
 get_args <- function(sp, ...) {
 
   # draw up relevant parameters based on corrected species name
-  sp <- parse_species(sp)
+  sp <- check_species_args(sp)
 
   # initialise NULL output
   out <- NULL
@@ -61,5 +61,27 @@ get_args <- function(sp, ...) {
 
   # return
   out
+
+}
+
+# internal function: check whether a species has corresponding
+#   arguments in their population model template
+check_species_args <- function(x) {
+
+  # currently implemented species
+  sp_list <- c("macquarie_perch")
+
+  ## COULD PARTIALLY MATCH HERE
+
+  # error if species not known
+  if (!x %in% sp_list) {
+    stop(x, " does not have arguments defined in the ",
+         "aae.pop.templates package",
+         call. = FALSE)
+  }
+
+  # return species name
+  #   (only needed if using partial matching)
+  x
 
 }
