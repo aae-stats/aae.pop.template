@@ -11,6 +11,8 @@ NULL
 #'
 #' @importFrom stats rnorm
 #'
+#' @export
+#'
 #' @param k carrying capacity
 #'
 #' @details The \code{murray_cod} population model is a mixed
@@ -30,11 +32,11 @@ NULL
 #' # plot the simulated values
 #' plot(sims)
 murray_cod <- function(k = 20000) {
-  get_template(sp = "murraycod", k = k)
+  get_template(sp = "murray_cod", k = k)
 }
 
 # internal function: define species defaults
-template_murraycod <- function(k = 20000) {
+template_murray_cod <- function(k = 20000) {
 
   # how many stages are we going to work with?
   nstage <- 25

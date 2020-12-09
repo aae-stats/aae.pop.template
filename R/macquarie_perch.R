@@ -65,14 +65,14 @@ macquarie_perch <- function(
   genetic_factor = 1.0
 ) {
   get_template(
-    sp = "macquarieperch",
+    sp = "macquarie_perch",
     k = k,
     reproductive = reproductive,
     system = system)
 }
 
 # internal function: define species defaults
-template_macquarieperch <- function(
+template_macquarie_perch <- function(
   k = 1000,                     # adult female carrying capacity
   reproductive = 3:30,          # reproductive age classes
   system = "lake",              # define covariate type by system
