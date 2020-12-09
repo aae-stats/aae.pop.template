@@ -41,10 +41,32 @@ get_template <- function(sp, ...) {
   arg_list <- list(...)
 
   # draw up relevant parameters based on corrected species name
-  sp <- parse_species(sp)
+  sp <- check_species(sp)
   all_parameters <- do.call(get(paste0("template_", sp)), arg_list)
 
   # return collated dynamics object
   do.call(dynamics, all_parameters)
+
+}
+
+# internal function: check whether a species has a corresponding
+#   population model template
+check_species <- function(x) {
+
+  # currently implemented species
+  sp_list <- c("murray_cod", "macquarie_perch")
+
+  ## COULD PARTIALLY MATCH HERE
+
+  # error if species not known
+  if (!x %in% sp_list) {
+    stop(x, " is not a defined population model in the ",
+         "aae.pop.templates package",
+         call. = FALSE)
+  }
+
+  # return species name
+  #   (only needed if using partial matching)
+  x
 
 }
