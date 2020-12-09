@@ -1,6 +1,6 @@
 Package: aae.pop.templates
 Type: Package
-Title: Template Population Dynamics Models
+Title: Parameterised Population Dynamics Models
 Version: 0.0.0.9000
 Date: 2020-12-08
 Author: c(
@@ -12,8 +12,7 @@ Author: c(
          role = c("cph", "fnd"))
   )
 Maintainer: Jian Yen <jdl.yen@gmail.com>
-Description: Template population dynamics models for use with the aae.pop
-  package.
+Description: Parameterised population dynamics models for use with the aae.pop package.
 License: Apache License 2.0
 URL: https://aae-stats/github.io/aae.pop.templates, https://github.com/aae-stats/aae.pop.templates
 BugReports: https://github.com/aae-stats/aae.pop.templates/issues
@@ -22,10 +21,13 @@ LazyData: true
 Depends:
     R (>= 3.0)
 Imports:
-    stats
+    stats,
+    Rdpack (>= 0.7)
 Suggests:
     knitr,
     testthat,
     covr,
     rmarkdown
+RdMacros: Rdpack
 VignetteBuilder: knitr
+RoxygenNote: 7.1.1
