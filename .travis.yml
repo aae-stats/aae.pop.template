@@ -15,7 +15,7 @@ r_packages:
 - lintr
 
 r_github_packages:
-- aae.pop
+- aae-stats/aae.pop
 
 cache:
   packages: true
