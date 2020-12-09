@@ -1,7 +1,37 @@
-murray_cod <- function(k = 20000, ...) {
-  get_template(sp = "murraycod", k = k, ...)
-}
+#' @name murray_cod
+#' @title Parameterised Murray cod population model
+#' @description Use a pre-defined population dynamics object to
+#'   simulate population dynamics of Murray cod
+#'   (*Maccullochella peelii*). Model parameters are based
+#'   on existing data sets and published studies on Murray
+#'   cod.
+NULL
 
+#' @rdname murray_cod
+#'
+#' @importFrom stats rnorm
+#'
+#' @param k carrying capacity
+#'
+#' @details The \code{murray_cod} population model is a mixed
+#'   age- and stage-structured model with 25 classes and includes negative
+#'   density dependence, environmental and demographic
+#'   stochasticity, and optional associations with hydrological conditions
+#'   in rivers and stocking or angling effects.
+#'
+#' @examples
+#' # define a basic model for Murray cod with
+#' #   carrying capacity = 25000
+#' mc <- murray_cod(k = 25000)
+#'
+#' # simulate from this model
+#' sims <- simulate(mc, nsim = 100)
+#'
+#' # plot the simulated values
+#' plot(sims)
+murray_cod <- function(k = 20000) {
+  get_template(sp = "murraycod", k = k)
+}
 
 # internal function: define species defaults
 template_murraycod <- function(k = 20000) {
@@ -136,143 +166,6 @@ template_murraycod <- function(k = 20000) {
     demographic_stochasticity = demostoch,
     density_dependence = dd,
     density_dependence_n = NULL
-  )
-
-}
-
-# internal function: define macquarie perch arguments
-args_macquarieperch <- function(
-  n = c(0, 0, 0),
-  ntime = 50,
-  start = c(1, 1, 1),
-  end = c(1, 1, 1),
-  add = TRUE,
-  allee_strength = 1,
-  contributing_min = 0.75,
-  contributing_max = 1.0,
-  recruit_failure = 0,
-  genetic_factor = 1.0
-) {
-
-  # expand n, start, end if required
-  if (length(n) == 1)
-    n <- rep(n, 3)
-  if (length(start) == 1)
-    start <- rep(start, 3)
-  if (length(end) == 1)
-    end <- rep(end, 3)
-
-  # check for other lengths of n, start, or end
-  if (any(c(length(n), length(start), length(end)) != 3)) {
-    stop("n, start, and end must be vectors with 1 or 3 elements",
-         call. = FALSE)
-  }
-
-  # helper to define removals process
-  define_removals <- function(start, end, n, add = add) {
-
-    # set up a sequence of iterations at which individuals are removed
-    if (!is.list(n)) {
-      n <- mapply(
-        zeros_and_fill,
-        n,
-        start,
-        end,
-        MoreArgs = list(len = ntime),
-        SIMPLIFY = FALSE
-      )
-    } else {
-      if (!all.equal(sapply(n, length), ntime)) {
-        stop("if n is a list, each element must be a vector ",
-             "with one value for each time step",
-             call. = FALSE)
-      }
-    }
-
-    # define this as a function
-    translocate <- function(obj, pop, iter) {
-
-      # return
-      list(
-        n_yoy = n[[1]][iter],
-        n_twoplus = n[[2]][iter],
-        n_adult = n[[3]][iter],
-        add = add
-      )
-
-    }
-
-    # return
-    translocate
-
-  }
-
-  early_surv <- c(0.5, 0.013, 0.13)
-
-  # helper to calculate real-valued parameters for survival
-  #   simulation
-  transform_survival <- function(obj, pop, iter) {
-
-    # pull out the population matrix in the current time step
-    mat <- obj$matrix
-    if (is.list(mat))
-      mat <- mat[[iter]]
-
-    # wrap up all survival means and SDs, including early life
-    #  (this allows a single call to unit_to_real, which is slow)
-    survival_mean <- c(
-      genetic_factor * early_surv,  # early life survival with gene mixing
-      mat[transition(mat)]    # from population matrix in current time step
-    )
-    survival_sd <- c(
-      0.1, 0.007, 0.028,  # early life
-      0.05, 0.09, 0.11, 0.10, 0.10, 0.07, 0.08, 0.08, 0.08,
-      0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08,
-      0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.07, 0.06, 0.05
-    )
-
-    # convert unit interval to real line equivalents
-    out <- unit_to_real(
-      unit_mean = survival_mean,
-      unit_sd = survival_sd
-    )
-
-    # separate early life from other estimates
-    idx <- seq_len(nrow(out)) > 3
-
-    # return
-    list(
-      mean_real = out[idx, 1],    # for survival_gen
-      sd_real = out[idx, 2],      # for survival_gen
-      early_mean = out[!idx, 1],  # for reproduction_gen
-      early_sd = out[!idx, 2]     # for reproduction_gen
-    )
-
-  }
-
-  # return named list of args
-  list(
-
-    # set as 1 (default) or 2
-    density_dependence = list(allee_strength = allee_strength),
-
-    # set contributing as random uniform on 0.75-1.0 by default
-    # set recruit_failure at 0 by default
-    # add function to pre-transform unit to real and back
-    environmental_stochasticity = list(
-      contributing_min = contributing_min,
-      contributing_max = contributing_max,
-      recruit_failure = recruit_failure,
-      transform_survival
-    ),
-
-    # to include additions or removals of individuals
-    density_dependence_n = list(
-      define_removals(
-        start = start, end = end, n = n, add = add
-      )
-    )
-
   )
 
 }
