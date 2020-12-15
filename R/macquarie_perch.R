@@ -431,7 +431,7 @@ args_macquarie_perch <- function(
         SIMPLIFY = FALSE
       )
     } else {
-      if (!all.equal(sapply(n, length), ntime)) {
+      if (!all(sapply(n, length) == ntime)) {
         stop("if n is a list, each element must be a vector ",
              "with one value for each time step",
              call. = FALSE)
