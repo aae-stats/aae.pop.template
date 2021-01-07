@@ -218,12 +218,12 @@ template_macquarie_perch <- function(
     all_classes(popmat, dim = reproductive)
   )
   dd_n_fns <- list(
-    function(pop, n_yoy, ...)
-      add_remove(pop = pop, n = n_yoy, add = TRUE),
-    function(pop, n_twoplus, ...)
-      add_remove(pop = pop, n = n_twoplus, add = TRUE),
-    function(pop, n_adult, ...)
-      add_remove(pop = pop, n = n_adult, add = TRUE)
+    function(pop, n_yoy, add_yoy, ...)
+      add_remove(pop = pop, n = n_yoy, add = add_yoy),
+    function(pop, n_twoplus, add_twoplus, ...)
+      add_remove(pop = pop, n = n_twoplus, add = add_twoplus),
+    function(pop, n_adult, add_adult, ...)
+      add_remove(pop = pop, n = n_adult, add = add_adult)
   )
   dens_depend_n <- density_dependence_n(
     masks = dd_n_masks,
@@ -368,10 +368,15 @@ template_macquarie_perch <- function(
 #'   \code{c(1, 1, 1)}
 #' @param end time step at which additions or removals finish
 #'   if \code{n} is an integer or vector. Defaults to
-#'   \code{c(1, 1, 1)}.
+#'   \code{c(1, 1, 1)}
 #' @param add logical indicating whether individuals are
 #'   added or removed from the population. Defaults to
-#'   \code{TRUE}, which defines additions (e.g., stocking)
+#'   \code{TRUE}, which defines additions (e.g., stocking). Can
+#'   be specified as a single value, in which case all stages
+#'   are set equal, as three values, in which case stages can
+#'   differ, or as a matrix with three rows and \code{ntime}
+#'   columns, in which case the effects of \code{add} can
+#'   change through time
 #' @param allee_strength strength of Allee effect. Defaults
 #'   to \code{1}. See \insertCite{todd_lint15}{aae.pop.templates}
 #'   for details
@@ -403,13 +408,15 @@ args_macquarie_perch <- function(
   genetic_factor = 1.0
 ) {
 
-  # expand n, start, end if required
+  # expand n, start, end, add if required
   if (length(n) == 1)
     n <- rep(n, 3)
   if (length(start) == 1)
     start <- rep(start, 3)
   if (length(end) == 1)
     end <- rep(end, 3)
+  if (length(add) == 1)
+    add <- rep(add, 3)
 
   # check for other lengths of n, start, or end
   if (any(c(length(n), length(start), length(end)) != 3)) {
@@ -438,6 +445,17 @@ args_macquarie_perch <- function(
       }
     }
 
+    # set up a sequence of add flags
+    if (!is.matrix(add)) {
+      add <- matrix(rep(add, ntime), nrow = 3)
+    } else {
+      if (nrow(add) != 3 | ncol(add) != ntime) {
+        stop("if add is a matrix, it must have three rows ",
+             "and ntime columns (ntime = ", ntime, ")",
+             call. = FALSE)
+      }
+    }
+
     # define this as a function
     translocate <- function(obj, pop, iter) {
 
@@ -446,7 +464,9 @@ args_macquarie_perch <- function(
         n_yoy = n[[1]][iter],
         n_twoplus = n[[2]][iter],
         n_adult = n[[3]][iter],
-        add = add
+        add_yoy = add[1, iter],
+        add_twoplus = add[2, iter],
+        add_adult = add[3, iter]
       )
 
     }

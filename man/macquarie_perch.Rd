@@ -70,11 +70,16 @@ if \code{n} is an integer or vector. Defaults to
 
 \item{end}{time step at which additions or removals finish
 if \code{n} is an integer or vector. Defaults to
-\code{c(1, 1, 1)}.}
+\code{c(1, 1, 1)}}
 
 \item{add}{logical indicating whether individuals are
 added or removed from the population. Defaults to
-\code{TRUE}, which defines additions (e.g., stocking)}
+\code{TRUE}, which defines additions (e.g., stocking). Can
+be specified as a single value, in which case all stages
+are set equal, as three values, in which case stages can
+differ, or as a matrix with three rows and \code{ntime}
+columns, in which case the effects of \code{add} can
+change through time}
 
 \item{allee_strength}{strength of Allee effect. Defaults
 to \code{1}. See \insertCite{todd_lint15}{aae.pop.templates}
