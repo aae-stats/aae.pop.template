@@ -14,6 +14,13 @@ NULL
 #' @export
 #'
 #' @param k carrying capacity
+#' @param reproductive integer vector defining the adult stages in the
+#'   Murray cod population. Defaults to \code{5:50}
+#' @param system one of \code{"murray"}, \code{"largetrib"}, or
+#'   \code{"smalltrib"}, defining whether the maximum size of
+#'   individuals matches observations in the Murray River (1300 mm),
+#'   large tributaries (e.g., Goulburn River, Campaspe River; 1100 mm),
+#'   or small tributaries (e.g., XYZ; 900 mm). Defaults to "murray"
 #'
 #' @details The \code{murray_cod} population model is a mixed
 #'   age- and stage-structured model with 25 classes and includes negative
@@ -22,71 +29,156 @@ NULL
 #'   in rivers and stocking or angling effects.
 #'
 #' @examples
-#' # define a basic model for Murray cod with
-#' #   carrying capacity = 25000
-#' mc <- murray_cod(k = 25000)
+#' # define a basic model for Murray cod
+#' mc <- murray_cod()
+#'
+#' # define required arguments
+#' mc_args <- get_args("murray_cod")
 #'
 #' # simulate from this model
-#' sims <- simulate(mc, nsim = 100)
+#' sims <- simulate(mc, nsim = 100, args = mc_args)
 #'
 #' # plot the simulated values
 #' plot(sims)
-murray_cod <- function(k = 20000) {
-  get_template(sp = "murray_cod", k = k)
+murray_cod <- function(k = 20000, system = "murray") {
+  get_template(sp = "murray_cod", k = k, system = system)
 }
 
 # internal function: define species defaults
-template_murray_cod <- function(k = 20000) {
+template_murray_cod <- function(
+  k = 20000,
+  reproductive = 5:50,          # reproductive age classes
+  system = "murray"
+) {
 
   # how many stages are we going to work with?
-  nstage <- 25
+  nstage <- 50
+
+  # set system-specific max lengths
+  max_length_options <- c(
+    "murray" = 1300,
+    "largetrib" = 1100,
+    "smalltrib" = 900
+  )
+  max_length <- max_length_options[system]
+
+  # force evaluation of max length
+  force(max_length)
+
+  # helper function to calculate length from age (stochastically)
+  estimate_length <- function(age) {
+
+    # some length/growth parameters
+    l_inf <- 1360.465
+    k_est <- 0.0674 + rbeta(1, 849.86, 884.55) - 0.49
+    max_lt <- rnorm(1, max_length, 40 * (max_length / l_inf))
+
+    # return estimate lengths
+    max_lt * (1 - exp(-k_est * (age + 1.535)))
+
+  }
+
+  # helper function to calculate weight from length (stochastically)
+  estimate_weight <- function(length_est) {
+
+    # length-to-weight parameter
+    a_est <- rnorm(1, -13.52, 0.1352)
+
+    # estimate and return weight
+    (exp(a_est) / 1000) * (length_est ^ 3.36)
+
+  }
+
+  # define  a survival function
+  survival_gen <- function(
+    mat,
+    mean_real,
+    sd_real,
+    perfect_correlation = TRUE,
+    ...
+  ) {
+
+    rmultiunit_from_real(
+      n = 1,
+      mean_real = mean_real,
+      sd_real = sd_real,
+      perfect_correlation = perfect_correlation
+    )
+  }
+
+  # define a reproduction function
+  reproduction_gen <- function(
+    mat,
+    fec_params = c(389, 2723, 5344, 53.44),
+    early_mean,
+    early_sd,
+    ...
+  ) {
+
+    # estimate weights from ages
+    length_est <- estimate_length(reproductive)
+    weight_est <- estimate_weight(length_est)
+
+    # simulate parameters for fecundity from weight conversion
+    x <- rnorm(n = 1, mean = fec_params[1], sd = fec_params[2])
+    y <- rnorm(n = 1, mean = fec_params[3], sd = fec_params[4])
+
+    # generate stochastic values for early life
+    #   survival (eggs, larvae, young-of-year)
+    early_surv <- rmultiunit_from_real(n = 1, mean = early_mean, sd = early_sd)
+
+    # estimate baseline, per-capita fecundity
+    reprod <- -x + y * weight_est - 69.5 * (weight_est ^ 2)
+
+    # estimate and return reproduction estimates
+    0.5 * reprod * prod(early_surv)
+
+  }
+
+  # define mean survival
+  survival_params <- c(1107.608, 1.2668, -7.6079)
+  mean_surv <- (survival_params[1] / (c(1:(nstage)) ^ survival_params[2])) +
+    survival_params[3]
+  mean_surv <- mean_surv[2:(nstage)] / mean_surv[1:(nstage - 1)]
+  mean_surv[mean_surv < 0] <- 0
 
   # define base matrix
-  mat <- matrix(0, nrow = nstage, ncol = nstage)
-  survival_mask <- combine(
-    transition(mat), survival(mat, dims = nstage)
-  )
-  mat[survival_mask] <- c(
-    0.4790, 0.5846, 0.6552, 0.7054, 0.7431, 0.7722, 0.7954, 0.8144, 0.8301,
-    0.8434, 0.8547, 0.8646, 0.8731, 0.8807, 0.8874, 0.8934, 0.8988, 0.9037,
-    0.9081, 0.9121, 0.9158, 0.9192, 0.9224, 0.9253, 0.9375
-  )
-  yoy_surv <- 0.5 * 0.0122 * 0.1225
-  reproduction_mask <- reproduction(mat, dims = c(5:nstage))
-  mat[reproduction_mask] <- yoy_surv * c(
-    3000, 5000, 7000, 9000, 12000, 16000,
-    20000, 25000, 30000, 34000, 38000,
-    41000, 43000, 45000, 47000, 48000,
-    48000, 49000, 49000, 49000, 50000
-  )
+  popmat <- matrix(0, nrow = nstage, ncol = nstage)
 
-  # define basic BH density dependence
-  biomass_dd <- function(k, dims) {
+  # add survival
+  popmat[transition(popmat)] <- mean_surv
+
+  # add reproduction
+  early_surv <- c(0.5, 0.012, 0.38, 0.31)
+  reproduction_mask <- reproduction(popmat, dims = reproductive)
+  mean_lengths <- max_length * (1 - exp(-0.0674 * (reproductive + 1.535)))
+  mean_weights <- (exp(-13.52) / 1000) * (mean_lengths ^ 3.36)
+  reprod <- -389 + 5344 * mean_weights - 69.5 * (mean_weights ^ 2)
+  popmat[reproduction_mask] <- 0.5 * prod(early_surv) * reprod
+
+  # define basic biomass-based density dependence
+  biomass_dd <- function(k, stages) {
     function(x, n) {
-      sum_n <- sum(n[min(dims):length(n)])
-      x * ifelse(sum_n > k, k / sum_n, 1)
+      sum_n <- sum(n[min(stages$dims):length(n)])
+      x * ifelse(
+        sum_n > (stages$scaling * k),
+        (stages$scaling * k) / sum_n,
+        1
+      )
     }
   }
   dd_stages <- list(
-    c(3:4),
-    c(5:7),
-    c(8:10),
-    c(11:14),
-    c(15:25)
+    list(dims = 1, scaling = 4),
+    list(dims = 2:9, scaling = 1),
+    list(dims = 10:14, scaling = 1),
+    list(dims = 15:24, scaling = 1),
+    list(dims = 25:50, scaling = 1)
   )
   biomass_dd_list <- lapply(dd_stages, biomass_dd, k = k)
   biomass_mask_list <- lapply(
     dd_stages, transition, mat = mat
   )
-  biomass_mask_list[[length(biomass_mask_list)]][nstage, nstage] <- TRUE
-  dd_fns <- c(
-    list(beverton_holt(k = k)), biomass_dd_list
-  )
-  dd_masks <- c(
-    list(reproduction(mat, dims = c(5:nstage))),
-    biomass_mask_list
-  )
-  dd <- density_dependence(dd_masks, dd_fns)
+  dens_depend <- density_dependence(biomass_mask_list, biomass_dd_list)
 
   # basic single variable covariate function
   cov_funs <- function(mat, x) {
@@ -98,76 +190,279 @@ template_murray_cod <- function(k = 20000) {
     funs = cov_funs
   )
 
-  # define environmental stochasticity based on known standard deviations of
-  #   parameters
-  # survival
-  survival_env <- function(x) {
-
-    # define base parameters for SD
-    sd_scale <- c(0.2, rep(0.15, 3), rep(0.1, 3), rep(0.075, 3), rep(0.05, 15))
-    sd_tmp <- sd_scale * c(
-      0.4790, 0.5846, 0.6552, 0.7054, 0.7431, 0.7722, 0.7954, 0.8144, 0.8301,
-      0.8434, 0.8547, 0.8646, 0.8731, 0.8807, 0.8874, 0.8934, 0.8988, 0.9037,
-      0.9081, 0.9121, 0.9158, 0.9192, 0.9224, 0.9253, 0.9375
-    )
-
-    # simulate normal random variates
-    out <- rnorm(length(x), mean = x, sd = sd_tmp)
-
-    # check none sit outside 0/1
-    out <- ifelse(out > 1, 1, out)
-    out <- ifelse(out < 0, 0, out)
-
-    # return
-    out
-
-  }
-  # reproduction
-  reproduction_env <- function(x) {
-
-    # define base parameters for SD
-    yoy_surv <- 0.5 * 0.0122 * 0.1225
-    sd_tmp <- yoy_surv * c(
-      1500, 2400, 3200, 4000, 5300, 6900,
-      8400, 10500, 12600, 13900, 15600,
-      16800, 17600, 18500, 18800, 19200,
-      19200, 19600, 19600, 19600, 20000
-    )
-
-    # simulate normal random variates
-    out <- rnorm(length(x), mean = x, sd = sd_tmp)
-
-    # check none are negative (but can be > 1)
-    out <- ifelse(out < 0, 0, out)
-
-    # return
-    out
-
-  }
-  # collate into a enviro stochasticity object
+  # define environmental stochasticity
   envstoch <- environmental_stochasticity(
-    masks = list(survival_mask, reproduction_mask),
-    funs = list(survival_env, reproduction_env)
+    masks = list(
+      transition(popmat),
+      reproduction(popmat, dims = reproductive)
+    ),
+    funs = list(survival_gen, reproduction_gen)
   )
 
-  # set demographic stochasticity
-  # survival
-  demo_fn <- function(x) {
-    rpois(length(x), lambda = x)
+  # define angling effects
+  go_fishing <- function(
+    n, p_capture, slot, ...
+  ) {
+
+    # only needed if p_capture > 0
+    if (p_capture > 0) {
+
+      # flatten ages
+      age_vector <- rep(seq_along(n), times = n)
+
+      #   with n_available individuals within slot
+      length_est <- estimate_length(age_vector)
+
+      # which individuals are within the slot?
+      catchable <- length_est >= slot[1] & length_est <= slot[2]
+
+      # binary switch to determine which ones get caught
+      caught <- rbinom(n = sum(catchable), size = 1, prob = p_capture)
+
+      # which ages were caught?
+      caught <- age_vector[caught == 1]
+
+      # remove caught individuals from relevant age classes,
+      #   checking to make sure at least one individual was
+      #   caught
+      if (length(caught) > 0) {
+        to_remove <- table(caught)
+        idx <- as.numeric(names(to_remove))
+        n[idx] <- n[idx] - to_remove
+      }
+
+    }
+
+    # return
+    n
+
   }
-  demostoch <- demographic_stochasticity(
-    masks = all_classes(mat),
-    funs = demo_fn
+
+  # use density_dependence_n to include stocking,
+  #   translocations, or angling
+  dd_n_masks <- list(
+    all_classes(popmat, dim = 1),
+    all_classes(popmat, dim = 2),
+    all_classes(popmat, dim = reproductive),
+    all_classes(popmat)
+  )
+  dd_n_fns <- list(
+    function(pop, n_yoy, add_yoy, ...)
+      add_remove(pop = pop, n = n_yoy, add = add_yoy),
+    function(pop, n_twoplus, add_twoplus, ...)
+      add_remove(pop = pop, n = n_twoplus, add = add_twoplus),
+    function(pop, n_adult, add_adult, ...)
+      add_remove(pop = pop, n = n_adult, add = add_adult),
+    go_fishing
+  )
+  dens_depend_n <- density_dependence_n(
+    masks = dd_n_masks,
+    funs = dd_n_fns
   )
 
   # return template
   list(
-    matrix = mat,
+    matrix = popmat,
     covariates = covars,
     environmental_stochasticity = envstoch,
-    demographic_stochasticity = demostoch,
-    density_dependence = dd,
-    density_dependence_n = NULL
+    demographic_stochasticity = NULL,
+    density_dependence = dens_depend,
+    density_dependence_n = dens_depend_n
+  )
+
+}
+
+#' @rdname murray_cod
+#'
+#' @importFrom stats pnorm rnorm runif
+#'
+#' @export
+#'
+#' @param n an integer, vector of integers, or list specifying the
+#'   number of young-of-year, 2+, and adult fish to add or
+#'   remove in any given year. If a single integer is provided,
+#'   all age classes are assumed to have the same number of
+#'   additions or removals. If a vector is provided, it must
+#'   have one value for each age class. If a list is provided,
+#'   it must have one element for each age class, with a
+#'   value for each time step. Addition versus removal is
+#'   controlled with \code{add}. Defaults to
+#'   \code{c(0, 0, 0))}, which will specify no additions
+#'   or removals
+#' @param ntime number of time steps used in population
+#'   simulation. Defaults to \code{50} and is required
+#'   to ensure simulated additions or removals are defined
+#'   for every simulated time step
+#' @param start time step at which additions or removals start
+#'   if \code{n} is an integer or vector. Defaults to
+#'   \code{c(1, 1, 1)}
+#' @param end time step at which additions or removals finish
+#'   if \code{n} is an integer or vector. Defaults to
+#'   \code{c(1, 1, 1)}
+#' @param add logical indicating whether individuals are
+#'   added or removed from the population. Defaults to
+#'   \code{TRUE}, which defines additions (e.g., stocking). Can
+#'   be specified as a single value, in which case all stages
+#'   are set equal, as three values, in which case stages can
+#'   differ, or as a matrix with three rows and \code{ntime}
+#'   columns, in which case the effects of \code{add} can
+#'   change through time
+#' @param p_capture probability of capture by recreational anglers,
+#'   defaults to 0, in which case recreational fishing does not
+#'   occur
+#' @param slot length slot within which Murray cod can legally
+#'   be removed by recreational anglers. Defined in millimetres,
+#'   defaults to 550-750 mm.
+#'
+#' @details The Murray cod population template requires
+#'   several additional arguments and allows several optional
+#'   arguments. Arguments can be defined with a call to
+#'   \code{get_args("murray_cod")} and are described
+#'   individually above.
+#'
+args_murray_cod <- function(
+  n = c(0, 0, 0),
+  ntime = 50,
+  start = c(1, 1, 1),
+  end = c(1, 1, 1),
+  add = TRUE,
+  p_capture = 0.0,
+  slot = c(550, 750)
+) {
+
+  # expand n, start, end, add if required
+  if (length(n) == 1)
+    n <- rep(n, 3)
+  if (length(start) == 1)
+    start <- rep(start, 3)
+  if (length(end) == 1)
+    end <- rep(end, 3)
+  if (length(add) == 1)
+    add <- rep(add, 3)
+
+  # check for other lengths of n, start, or end
+  if (any(c(length(n), length(start), length(end)) != 3)) {
+    stop("n, start, and end must be vectors with 1 or 3 elements",
+         call. = FALSE)
+  }
+
+  # helper to define removals process
+  define_removals <- function(start, end, n, add = add) {
+
+    # set up a sequence of iterations at which individuals are removed
+    if (!is.list(n)) {
+      n <- mapply(
+        zeros_and_fill,
+        n,
+        start,
+        end,
+        MoreArgs = list(len = ntime),
+        SIMPLIFY = FALSE
+      )
+    } else {
+      if (!all(sapply(n, length) == ntime)) {
+        stop("if n is a list, each element must be a vector ",
+             "with one value for each time step",
+             call. = FALSE)
+      }
+    }
+
+    # set up a sequence of add flags
+    if (!is.matrix(add)) {
+      add <- matrix(rep(add, ntime), nrow = 3)
+    } else {
+      if (nrow(add) != 3 | ncol(add) != ntime) {
+        stop("if add is a matrix, it must have three rows ",
+             "and ntime columns (ntime = ", ntime, ")",
+             call. = FALSE)
+      }
+    }
+
+    # define this as a function
+    translocate <- function(obj, pop, iter) {
+
+      # return
+      list(
+        n_yoy = n[[1]][iter],
+        n_twoplus = n[[2]][iter],
+        n_adult = n[[3]][iter],
+        add_yoy = add[1, iter],
+        add_twoplus = add[2, iter],
+        add_adult = add[3, iter]
+      )
+
+    }
+
+    # return
+    translocate
+
+  }
+
+  # define mean early-life survival
+  early_surv <- c(0.5, 0.012, 0.38, 0.31)
+
+  # force evaluation of early-life survival
+  force(early_surv)
+
+  # helper to calculate real-valued parameters for survival
+  #   simulation
+  transform_survival <- function(obj, pop, iter) {
+
+    # pull out the population matrix in the current time step
+    mat <- obj$matrix
+    if (is.list(mat))
+      mat <- mat[[iter]]
+
+    # wrap up all survival means and SDs, including early life
+    #  (this allows a single call to unit_to_real, which is slow)
+    survival_mean <- c(
+      early_surv,  # early life survival
+      mat[transition(mat)]    # from population matrix in current time step
+    )
+    survival_sd <- c(
+      0.2 * survival_mean[1:7],
+      0.15 * survival_mean[8:10],
+      0.1 * survival_mean[11:length(survival_mean)]
+    )
+
+    # convert unit interval to real line equivalents
+    out <- unit_to_real(
+      unit_mean = survival_mean,
+      unit_sd = survival_sd
+    )
+
+    # separate early life from other estimates
+    idx <- seq_len(nrow(out)) > 4
+
+    # return
+    list(
+      mean_real = out[idx, 1],    # for survival_gen
+      sd_real = out[idx, 2],      # for survival_gen
+      early_mean = out[!idx, 1],  # for reproduction_gen
+      early_sd = out[!idx, 2]     # for reproduction_gen
+    )
+
+  }
+
+  # return named list of args
+  list(
+
+    # set contributing as random uniform on 0.75-1.0 by default
+    # set recruit_failure at 0 by default
+    # add function to pre-transform unit to real and back
+    environmental_stochasticity = list(
+      transform_survival
+    ),
+
+    # to include additions or removals of individuals
+    density_dependence_n = list(
+      define_removals(
+        start = start, end = end, n = n, add = add
+      ),
+      p_capture = p_capture,
+      slot = slot
+    )
+
   )
 
 }
