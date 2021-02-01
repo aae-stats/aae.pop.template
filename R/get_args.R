@@ -33,7 +33,7 @@
 #' mp_args <- get_args("macquarie_perch")
 #'
 #' # simulate from this model
-#' sims <- simulate(mc, nsim = 100, args = mp_args)
+#' sims <- simulate(mp, nsim = 100, args = mp_args)
 #'
 #' # plot the simulated values
 #' plot(sims)
