@@ -54,7 +54,7 @@ NULL
 #' mp_args <- get_args("macquarie_perch")
 #'
 #' # simulate from this model
-#' sims <- simulate(mc, nsim = 100, args = mp_args)
+#' sims <- simulate(mp, nsim = 100, args = mp_args)
 #'
 #' # plot the simulated values
 #' plot(sims)
@@ -388,6 +388,8 @@ template_macquarie_perch <- function(
 #'   Defaults to \code{1.0}
 #' @param recruit_failure probability of complete recruitment
 #'   failure at any given time step. Defaults to \code{0}
+#' @param genetic_factor proportional change in early life
+#'   survival due to genetic mixing
 #'
 #' @details The Macquarie perch population template requires
 #'   several additional arguments and allows several optional
@@ -493,6 +495,7 @@ args_macquarie_perch <- function(
       genetic_factor * early_surv,  # early life survival with gene mixing
       mat[transition(mat)]    # from population matrix in current time step
     )
+
     survival_sd <- c(
       0.1, 0.007, 0.028,  # early life
       0.05, 0.09, 0.11, 0.10, 0.10, 0.07, 0.08, 0.08, 0.08,
