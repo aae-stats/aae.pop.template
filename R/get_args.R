@@ -69,7 +69,7 @@ get_args <- function(sp, ...) {
 check_species_args <- function(x) {
 
   # currently implemented species
-  sp_list <- c("macquarie_perch")
+  sp_list <- c("macquarie_perch", "murray_cod")
 
   ## COULD PARTIALLY MATCH HERE
 

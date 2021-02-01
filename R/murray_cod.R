@@ -54,6 +54,14 @@ template_murray_cod <- function(
   # how many stages are we going to work with?
   nstage <- 50
 
+  # check system
+  if (!system %in% c("murray", "largetrib", "smalltrib")) {
+    stop(
+      "system must be one of murray, largetrib or smalltrib",
+      call. = FALSE
+    )
+  }
+
   # set system-specific max lengths
   max_length_options <- c(
     "murray" = 1300,
@@ -259,6 +267,12 @@ template_murray_cod <- function(
     masks = dd_n_masks,
     funs = dd_n_fns
   )
+
+  # nolint start
+  # print a message to ensure args are included
+  message('Arguments are required to simulate Murray cod dynamics.\n',
+          'Default arguments can be accessed with get_args("murray_cod").')
+  # nolint end
 
   # return template
   list(
