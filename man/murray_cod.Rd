@@ -2,12 +2,74 @@
 % Please edit documentation in R/murray_cod.R
 \name{murray_cod}
 \alias{murray_cod}
+\alias{args_murray_cod}
 \title{Parameterised Murray cod population model}
 \usage{
-murray_cod(k = 20000)
+murray_cod(k = 20000, system = "murray")
+
+args_murray_cod(
+  n = c(0, 0, 0),
+  ntime = 50,
+  start = c(1, 1, 1),
+  end = c(1, 1, 1),
+  add = TRUE,
+  p_capture = 0,
+  slot = c(550, 750)
+)
 }
 \arguments{
 \item{k}{carrying capacity}
+
+\item{system}{one of \code{"murray"}, \code{"largetrib"}, or
+\code{"smalltrib"}, defining whether the maximum size of
+individuals matches observations in the Murray River (1300 mm),
+large tributaries (e.g., Goulburn River, Campaspe River; 1100 mm),
+or small tributaries (e.g., XYZ; 900 mm). Defaults to "murray"}
+
+\item{n}{an integer, vector of integers, or list specifying the
+number of young-of-year, 2+, and adult fish to add or
+remove in any given year. If a single integer is provided,
+all age classes are assumed to have the same number of
+additions or removals. If a vector is provided, it must
+have one value for each age class. If a list is provided,
+it must have one element for each age class, with a
+value for each time step. Addition versus removal is
+controlled with \code{add}. Defaults to
+\code{c(0, 0, 0))}, which will specify no additions
+or removals}
+
+\item{ntime}{number of time steps used in population
+simulation. Defaults to \code{50} and is required
+to ensure simulated additions or removals are defined
+for every simulated time step}
+
+\item{start}{time step at which additions or removals start
+if \code{n} is an integer or vector. Defaults to
+\code{c(1, 1, 1)}}
+
+\item{end}{time step at which additions or removals finish
+if \code{n} is an integer or vector. Defaults to
+\code{c(1, 1, 1)}}
+
+\item{add}{logical indicating whether individuals are
+added or removed from the population. Defaults to
+\code{TRUE}, which defines additions (e.g., stocking). Can
+be specified as a single value, in which case all stages
+are set equal, as three values, in which case stages can
+differ, or as a matrix with three rows and \code{ntime}
+columns, in which case the effects of \code{add} can
+change through time}
+
+\item{p_capture}{probability of capture by recreational anglers,
+defaults to 0, in which case recreational fishing does not
+occur}
+
+\item{slot}{length slot within which Murray cod can legally
+be removed by recreational anglers. Defined in millimetres,
+defaults to 550-750 mm.}
+
+\item{reproductive}{integer vector defining the adult stages in the
+Murray cod population. Defaults to \code{5:50}}
 }
 \description{
 Use a pre-defined population dynamics object to
@@ -22,14 +84,22 @@ The \code{murray_cod} population model is a mixed
   density dependence, environmental and demographic
   stochasticity, and optional associations with hydrological conditions
   in rivers and stocking or angling effects.
+
+The Murray cod population template requires
+  several additional arguments and allows several optional
+  arguments. Arguments can be defined with a call to
+  \code{get_args("murray_cod")} and are described
+  individually above.
 }
 \examples{
-# define a basic model for Murray cod with
-#   carrying capacity = 25000
-mc <- murray_cod(k = 25000)
+# define a basic model for Murray cod
+mc <- murray_cod()
+
+# define required arguments
+mc_args <- get_args("murray_cod")
 
 # simulate from this model
-sims <- simulate(mc, nsim = 100)
+sims <- simulate(mc, nsim = 100, args = mc_args)
 
 # plot the simulated values
 plot(sims)

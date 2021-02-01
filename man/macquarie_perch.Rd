@@ -38,14 +38,8 @@ conditions. Covariate associations are included in simulations
 only if covariates are provided to \code{\link[aae.pop]{simulate}}
 through the \code{args} argument}
 
-\item{genetic_factor}{positive real value representing proportional
-changes in early life (egg, larvae, young-of-year) survival,
-included here to allow scenarios of genetic mixing of Macquarie
-perch populations (e.g., \insertCite{lutz20}{aae.pop.templates}).
-Note that non-default values of \code{genetic_factor} must be
-provided when defining the population model with
-\code{macquarie_perch} and again when defining arguments with
-\code{get_args("macquarie_perch")}}
+\item{genetic_factor}{proportional change in early life
+survival due to genetic mixing}
 
 \item{n}{an integer, vector of integers, or list specifying the
 number of young-of-year, 2+, and adult fish to add or
@@ -129,7 +123,7 @@ mp <- macquarie_perch(k = 1000)
 mp_args <- get_args("macquarie_perch")
 
 # simulate from this model
-sims <- simulate(mc, nsim = 100, args = mp_args)
+sims <- simulate(mp, nsim = 100, args = mp_args)
 
 # plot the simulated values
 plot(sims)
