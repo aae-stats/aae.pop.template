@@ -62,12 +62,14 @@ test_that("get_template returns correct template without species wrappers", {
 
   # check Murray cod template
   value <- get_template("murray_cod")
-  target <- macquarie_perch()
+  target <- murray_cod()
+  target$hex <- value$hex
   expect_equal(value, target)
 
   # check Macquarie perch template
   value <- get_template("macquarie_perch")
   target <- macquarie_perch()
+  target$hex <- value$hex
   expect_equal(value, target)
 
 })
