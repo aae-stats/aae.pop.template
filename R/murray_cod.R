@@ -176,7 +176,7 @@ template_murray_cod <- function(
   )
   biomass_dd_list <- lapply(dd_stages, biomass_dd, k = k)
   biomass_mask_list <- lapply(
-    dd_stages, transition, mat = mat
+    dd_stages, transition, mat = popmat
   )
   dens_depend <- density_dependence(biomass_mask_list, biomass_dd_list)
 
@@ -184,7 +184,7 @@ template_murray_cod <- function(
   cov_funs <- function(mat, x) {
     mat * (1 / (1 + exp(-0.5 * (x + 10))))
   }
-  cov_masks <- transition(mat)
+  cov_masks <- transition(popmat)
   covars <- covariates(
     masks = cov_masks,
     funs = cov_funs
