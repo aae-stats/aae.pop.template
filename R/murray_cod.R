@@ -214,7 +214,14 @@ template_murray_cod <- function(
       coefs <- coefs$broken
 
     # pull out relevant system
-    names(coefs) <- coef_names
+    names(coefs) <- c(
+      "flow_var",
+      "spring_flow",
+      "max_ante",
+      "summer_flow",
+      "winter_flow",
+      "spawning_temp"
+    )
 
     # calculate scaling factor by year
     metrics <- c(
