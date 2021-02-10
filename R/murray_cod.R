@@ -214,7 +214,6 @@ template_murray_cod <- function(
       coefs <- coefs$broken
 
     # pull out relevant system
-    coefs <- coefs[[system]]
     names(coefs) <- coef_names
 
     # calculate scaling factor by year
