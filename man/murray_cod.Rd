@@ -14,17 +14,19 @@ args_murray_cod(
   end = c(1, 1, 1),
   add = TRUE,
   p_capture = 0,
-  slot = c(550, 750)
+  slot = c(550, 750),
+  system = "murray"
 )
 }
 \arguments{
 \item{k}{carrying capacity}
 
-\item{system}{one of \code{"murray"}, \code{"largetrib"}, or
-\code{"smalltrib"}, defining whether the maximum size of
-individuals matches observations in the Murray River (1300 mm),
-large tributaries (e.g., Goulburn River, Campaspe River; 1100 mm),
-or small tributaries (e.g., XYZ; 900 mm). Defaults to "murray"}
+\item{system}{one of \code{"murray"}, \code{"goulburn"}, or
+\code{"campaspe"}, defining flow associations based on those
+observed in the Murray River, Goulburn River (currently identical
+to observations in the Murray River), or the Campaspe River
+(currently based on observations in the Broken River). Defaults
+to \code{"murray"}}
 
 \item{n}{an integer, vector of integers, or list specifying the
 number of young-of-year, 2+, and adult fish to add or
@@ -66,7 +68,7 @@ occur}
 
 \item{slot}{length slot within which Murray cod can legally
 be removed by recreational anglers. Defined in millimetres,
-defaults to 550-750 mm.}
+defaults to 550-750 mm}
 
 \item{reproductive}{integer vector defining the adult stages in the
 Murray cod population. Defaults to \code{5:50}}

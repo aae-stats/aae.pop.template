@@ -13,10 +13,11 @@ Define additional arguments used to control the
 }
 \details{
 The \code{get_args} function can be used to access
-  previously defined arguments to be passed to \code{\link[aae.pop]{simulate}}
-  for any given species. In general, arguments for a particular
-  species can be accessed with \code{get_args("species_name")},
-  where \code{species_name} is replaced with the function name used
+  previously defined arguments to be passed to
+  \code{\link[aae.pop]{simulate}} for any given species.
+  In general, arguments for a particular species can be
+  accessed with \code{get_args("species_name")}, where
+  \code{species_name} is replaced with the function name used
   to define the \code{dynamics} object for that species. For example,
   arguments for Macquarie perch (function \code{macquarie_perch})
   can be accessed with \code{get_args("macquarie_perch")}.

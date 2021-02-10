@@ -188,14 +188,78 @@ template_murray_cod <- function(
   )
   dens_depend <- density_dependence(biomass_mask_list, biomass_dd_list)
 
-  # basic single variable covariate function
-  cov_funs <- function(mat, x) {
-    mat * (1 / (1 + exp(-0.5 * (x + 10))))
+  # covariate effects based on standardised discharge metrics
+  #   - associations estimated and described in Tonkin et al. 2020 (STOTEN)
+  recruitment_effects <- function(mat, x, system, ...) {
+
+    # define system-specific coefficients
+    coefs <- list(
+      murray = c(-93.1, 25.2, 168.7, -34.0, 60.9, -14.9),
+      ovens = c(26.5, -10.7, -69.7, 12.2, 2.7, 2.4),
+      goulburn = c(92.0, 0.1, -28.7, -36.0, 4.5, -25.3),
+      king = c(-21.9, -6.9, -18.5, -30.9, 14.3, -3.6),
+      broken = c(-0.7, 7.1, -1.2, -7.3, 0.6, 16.1)
+    )
+
+    # switch for currently used covariates
+    if (!system %in% c("murray", "goulburn", "campaspe")) {
+      stop('system must be set as "murray", "goulburn", or "campaspe" ',
+           'in a call to get_args("murray_cod"), with the returned ',
+           'arguments passed to simulate.',
+           call. = FALSE)
+    }
+    if (system == "goulburn" | system == "murray")
+      coefs <- coefs$murray
+    if (system == "campaspe")
+      coefs <- coefs$broken
+
+    # pull out relevant system
+    coefs <- coefs[[system]]
+    names(coefs) <- coef_names
+
+    # calculate scaling factor by year
+    metrics <- c(
+      x$proportional_flow_variability,
+      x$proportional_spring_flow,
+      x$proportional_max_antecedent,
+      x$proportional_summer_flow,
+      x$proportional_winter_flow,
+      x$spawning_temperature
+    )
+    effect <- metrics * (coefs / 100)
+
+    # fill NAs
+    effect[is.na(effect)] <- 0
+
+    # summarise over all metrics
+    effect <- sum(effect)
+
+    # calculate change in fecundity
+    mat <- mat + effect * (mat / 5)
+    mat[mat < 0] <- 0
+
+    # return
+    mat
+
   }
-  cov_masks <- transition(popmat)
+
+  # low-flow effect that reduces survival when flow falls below 5 ML/day due
+  #    to increased risk of blackwater/hypoxic events
+  survival_effects <- function(mat, x, ...) {
+    scaling <- 0.8 + (0.2 / (1 + exp(-2 * (x$minimum_daily_flow - 5))))
+    scaling * mat
+  }
+  cov_effects <- list(
+    recruitment_effects,
+    survival_effects
+  )
+  cov_masks <- list(
+    reproduction(popmat, dims = reproductive),
+    transition(popmat, dims = reproductive)
+  )
   covars <- covariates(
     masks = cov_masks,
-    funs = cov_funs
+    funs = cov_effects
   )
 
   # define environmental stochasticity
@@ -326,7 +390,13 @@ template_murray_cod <- function(
 #'   occur
 #' @param slot length slot within which Murray cod can legally
 #'   be removed by recreational anglers. Defined in millimetres,
-#'   defaults to 550-750 mm.
+#'   defaults to 550-750 mm
+#' @param system one of \code{"murray"}, \code{"goulburn"}, or
+#'   \code{"campaspe"}, defining flow associations based on those
+#'   observed in the Murray River, Goulburn River (currently identical
+#'   to observations in the Murray River), or the Campaspe River
+#'   (currently based on observations in the Broken River). Defaults
+#'   to \code{"murray"}
 #'
 #' @details The Murray cod population template requires
 #'   several additional arguments and allows several optional
@@ -341,7 +411,8 @@ args_murray_cod <- function(
   end = c(1, 1, 1),
   add = TRUE,
   p_capture = 0.0,
-  slot = c(550, 750)
+  slot = c(550, 750),
+  system = "murray"
 ) {
 
   # expand n, start, end, add if required
@@ -475,6 +546,11 @@ args_murray_cod <- function(
       ),
       p_capture = p_capture,
       slot = slot
+    ),
+
+    # to set covariates relative to a specific system
+    covariates = list(
+      system = system
     )
 
   )
