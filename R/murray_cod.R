@@ -225,7 +225,7 @@ template_murray_cod <- function(
 
     # calculate scaling factor by year
     metrics <- c(
-      x$proportional_flow_variability,
+      x$spawning_flow_variability,
       x$proportional_spring_flow,
       x$proportional_max_antecedent,
       x$proportional_summer_flow,
@@ -238,6 +238,8 @@ template_murray_cod <- function(
     effect[is.na(effect)] <- 0
 
     # summarise over all metrics
+    ### DON'T ADD HERE, APPLY SEQUENTIALLY TO EACH STAGE
+    ### (THIS MIGHT HAVE ANALYTICAL FORM, CHECK)
     effect <- sum(effect)
 
     # calculate change in fecundity
