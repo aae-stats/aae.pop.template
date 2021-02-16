@@ -138,6 +138,9 @@ template_murray_cod <- function(
     # estimate baseline, per-capita fecundity
     reprod <- -x + y * weight_est - 69.5 * (weight_est ^ 2)
 
+    # make sure no values are negative
+    reprod[reprod < 0] <- 0
+
     # estimate and return reproduction estimates
     0.5 * reprod * prod(early_surv)
 
@@ -232,19 +235,21 @@ template_murray_cod <- function(
       x$proportional_winter_flow,
       x$spawning_temperature
     )
-    effect <- metrics * (coefs / 100)
+    effect <- metrics * (1 + (coefs / 100))
 
     # fill NAs
     effect[is.na(effect)] <- 0
 
+    # and set negative values to zero
+    effect[effect < 0] <- 0
+
     # summarise over all metrics
-    ### DON'T ADD HERE, APPLY SEQUENTIALLY TO EACH STAGE
-    ### (THIS MIGHT HAVE ANALYTICAL FORM, CHECK)
-    effect <- sum(effect)
+    #   - using product, which will limit to bottlenecks
+    #     (e.g., 100% mortality in any stage = 0 survival overall)
+    effect <- prod(effect)
 
     # calculate change in fecundity
-    mat <- mat + effect * (mat / 5)
-    mat[mat < 0] <- 0
+    mat <- mat * effect
 
     # return
     mat
