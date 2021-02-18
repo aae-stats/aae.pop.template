@@ -207,12 +207,14 @@ template_murray_cod <- function(
     )
 
     # switch for currently used covariates
+    # nolint start
     if (!system %in% c("murray", "goulburn", "campaspe")) {
       stop('system must be set as "murray", "goulburn", or "campaspe" ',
            'in a call to get_args("murray_cod"), with the returned ',
            'arguments passed to simulate.',
            call. = FALSE)
     }
+    # nolint end
     if (system == "goulburn" | system == "murray")
       coefs <- coefs$murray
     if (system == "campaspe")
