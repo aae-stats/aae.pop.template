@@ -193,7 +193,7 @@ template_murray_cod <- function(
 
   # covariate effects based on standardised discharge metrics
   #   - associations estimated and described in Tonkin et al. 2020 (STOTEN)
-  recruitment_effects <- function(mat, x, system, ...) {
+  recruitment_effects <- function(mat, x, ...) {
 
     # define system-specific coefficients
     coefs <- list(
@@ -424,8 +424,7 @@ args_murray_cod <- function(
   end = c(1, 1, 1),
   add = TRUE,
   p_capture = 0.0,
-  slot = c(550, 750),
-  system = "murray"
+  slot = c(550, 750)
 ) {
 
   # expand n, start, end, add if required
@@ -559,11 +558,6 @@ args_murray_cod <- function(
       ),
       p_capture = p_capture,
       slot = slot
-    ),
-
-    # to set covariates relative to a specific system
-    covariates = list(
-      system = system
     )
 
   )
