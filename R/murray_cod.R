@@ -169,7 +169,9 @@ template_murray_cod <- function(
 
   # define basic biomass-based density dependence
   biomass_dd <- function(k, stages) {
-    function(x, n) {
+    function(x, n, kdyn = NULL) {
+      if (!is.null(kdyn))
+        k <- kdyn
       sum_n <- sum(n[min(stages$dims):length(n)])
       x * ifelse(
         sum_n > (stages$scaling * k),
