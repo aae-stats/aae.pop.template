@@ -55,12 +55,13 @@ template_murray_cod <- function(
   nstage <- 50
 
   # check system
-  if (!system %in% c("murray", "largetrib", "smalltrib")) {
-    stop(
-      "system must be one of murray, largetrib or smalltrib",
-      call. = FALSE
-    )
+  # nolint start
+  if (!system %in% c("murray", "goulburn", "campaspe")) {
+    stop('system must be set as "murray", "goulburn", or "campaspe" ',
+         'in a call to murray_cod',
+         call. = FALSE)
   }
+  sys_switch <- ifelse(system == "murray", "murray", "largetrib")
 
   # set system-specific max lengths
   max_length_options <- c(
@@ -68,7 +69,7 @@ template_murray_cod <- function(
     "largetrib" = 1100,
     "smalltrib" = 900
   )
-  max_length <- max_length_options[system]
+  max_length <- max_length_options[sys_switch]
 
   # force evaluation of max length
   force(max_length)
@@ -206,14 +207,6 @@ template_murray_cod <- function(
       broken = c(-0.7, 7.1, -1.2, -7.3, 0.6, 16.1)
     )
 
-    # switch for currently used covariates
-    # nolint start
-    if (!system %in% c("murray", "goulburn", "campaspe")) {
-      stop('system must be set as "murray", "goulburn", or "campaspe" ',
-           'in a call to get_args("murray_cod"), with the returned ',
-           'arguments passed to simulate.',
-           call. = FALSE)
-    }
     # nolint end
     if (system == "goulburn" | system == "murray")
       coefs <- coefs$murray
