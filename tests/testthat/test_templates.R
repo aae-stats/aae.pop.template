@@ -64,7 +64,7 @@ test_that("platypus template returns correct dynamics object", {
   dyn <- platypus()
   arg <- get_args("platypus")
   sim <- simulate(dyn, args = arg)
-  expect_equal(dim(sim), c(1L, 30L, 51L))
+  expect_equal(dim(sim), c(1L, 2L, 51L))
 
   # expect most processes to be defined
   expect_null(dyn$density_dependence_n)
