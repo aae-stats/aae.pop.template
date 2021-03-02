@@ -2,10 +2,12 @@
 
 export(args_macquarie_perch)
 export(args_murray_cod)
+export(args_platypus)
 export(get_args)
 export(get_template)
 export(macquarie_perch)
 export(murray_cod)
+export(platypus)
 importFrom(Rdpack,reprompt)
 importFrom(stats,pnorm)
 importFrom(stats,rnorm)

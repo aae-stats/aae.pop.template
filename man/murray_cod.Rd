@@ -14,8 +14,7 @@ args_murray_cod(
   end = c(1, 1, 1),
   add = TRUE,
   p_capture = 0,
-  slot = c(550, 750),
-  system = "murray"
+  slot = c(550, 750)
 )
 }
 \arguments{
