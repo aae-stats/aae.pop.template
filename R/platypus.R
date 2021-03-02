@@ -64,6 +64,7 @@ template_platypus <- function(k = 400) {
       sd_real = sd_real,
       perfect_correlation = perfect_correlation
     )
+
   }
 
   # define a reproduction function
@@ -75,7 +76,7 @@ template_platypus <- function(k = 400) {
   ) {
 
     # simulate realised fecundity in a given year
-    n_offspring <- rpois(1, lambda = mat[1, 2])
+    n_offspring <- rpois(1, lambda = mat)
 
     # estimate and return reproduction estimates
     n_offspring * proportion_female * proportion_breeding
