@@ -263,7 +263,7 @@ args_platypus <- function(...) {
     # add function to pre-transform unit to real and back
     environmental_stochasticity = list(
       transform_survival
-    ),
+    )
 
   )
 
