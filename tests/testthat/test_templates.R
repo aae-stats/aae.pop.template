@@ -76,7 +76,10 @@ test_that("platypus template returns correct dynamics object", {
     class(dyn$density_dependence),
     c("density_dependence", "function")
   )
-  expect_null(dyn$demographic_stochasticity)
+  expect_equal(
+    class(dyn$demographic_stochasticity),
+    c("demographic_stochasticity", "function")
+  )
   expect_equal(
     class(dyn$environmental_stochasticity),
     c("environmental_stochasticity", "function")

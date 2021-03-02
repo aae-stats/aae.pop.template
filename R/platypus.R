@@ -96,8 +96,7 @@ template_platypus <- function(k = 400) {
   # define custom density dependence function
   k_female <- k * 0.65     # assumes 65:35 F:M sex ratio in adults
   theta_ricker <- function(x, n, theta = 4, r = 0.4) {
-    scale <- exp(r * (1 - (n[2] / k_female) ^ theta))
-    x * (scale / max(scale))
+    x * exp(r * (1 - (n[2] / k_female) ^ theta)) / exp(r)
   }
   dens_depend <- density_dependence(
     reproduction(popmat),
@@ -121,9 +120,11 @@ template_platypus <- function(k = 400) {
     ave_weight <- 680
 
     # calculate proportional change in survival
-    term <- alpha + beta * x + gamma * (x ^ 2) + delta * ave_weight + offset
-    effect <- exp(term) / (1 + exp(term))
-    effect <- effect / max(effect)
+    term1 <- alpha + delta * ave_weight + offset
+    term2 <- beta * x + gamma * (x ^ 2)
+    effect1 <- exp(term1) / (1 + exp(term1))
+    effect <- exp(term1 + term2) / (1 + exp(term1 + term2))
+    effect <- effect / effect1
 
     # calculate and return absolute change in survival
     mat * effect
