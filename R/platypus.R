@@ -93,11 +93,15 @@ template_platypus <- function(k = 400) {
   # add reproduction
   popmat[1, 2] <- 0.5 * 0.62 * 1.5
 
-  # define BH density dependence
+  # define custom density dependence function
   k_female <- k * 0.65     # assumes 65:35 F:M sex ratio in adults
+  theta_ricker <- function(x, n, theta = 4, r = 0.4) {
+    scale <- exp(r * (1 - (n[2] / k_female) ^ theta))
+    x * (scale / max(scale))
+  }
   dens_depend <- density_dependence(
-    combine(survival(popmat), reproduction(popmat)),
-    beverton_holt(k = k_female)
+    reproduction(popmat),
+    theta_ricker
   )
 
   # covariate effects based on six-month cumulativee discharge
@@ -144,6 +148,16 @@ template_platypus <- function(k = 400) {
     )
   )
 
+  # define demographic stochasticity
+  demostoch <- demographic_stochasticity(
+    masks = list(
+      all_classes(popmat)
+    ),
+    funs = list(
+      function(x, ...) rpois(n = length(x), lambda = x)
+    )
+  )
+
   # optional: use density_dependence_n to include predation
   #   or translocations
   # dd_n_masks <- list(
@@ -168,7 +182,7 @@ template_platypus <- function(k = 400) {
     matrix = popmat,
     covariates = covars,
     environmental_stochasticity = envstoch,
-    demographic_stochasticity = NULL,
+    demographic_stochasticity = demostoch,
     density_dependence = dens_depend,
     density_dependence_n = NULL
   )
