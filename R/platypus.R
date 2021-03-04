@@ -128,14 +128,14 @@ template_platypus <- function(k = 400) {
 
   # combine into a covariates object
   covars <- covariates(
-    masks = combine(survival(popmat), transition(popmat)),
+    masks = combine(survival(popmat, dims = 2), transition(popmat, dims = 1)),
     funs = survival_effects
   )
 
   # define environmental stochasticity
   envstoch <- environmental_stochasticity(
     masks = list(
-      combine(survival(popmat), transition(popmat)),
+      masks = combine(survival(popmat, dims = 2), transition(popmat, dims = 1)),
       reproduction(popmat)
     ),
     funs = list(
