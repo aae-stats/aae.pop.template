@@ -214,7 +214,7 @@ template_platypus <- function(k = 400) {
 #'   \code{get_args("platypus")} and are described
 #'   individually above.
 #'
-args_platypus <- function(n, ntime, start, end, ...) {
+args_platypus <- function(n = 0, ntime = 50, start = 1, end = 1, ...) {
 
   # helper to calculate real-valued parameters for survival
   #   simulation
