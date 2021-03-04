@@ -67,7 +67,10 @@ test_that("platypus template returns correct dynamics object", {
   expect_equal(dim(sim), c(1L, 2L, 51L))
 
   # expect most processes to be defined
-  expect_null(dyn$density_dependence_n)
+  expect_equal(
+    class(dyn$density_dependence_n),
+    c("density_dependence_n", "function")
+  )
   expect_equal(
     class(dyn$covariates),
     c("covariates", "function")

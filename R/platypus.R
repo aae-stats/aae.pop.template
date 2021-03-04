@@ -103,44 +103,39 @@ template_platypus <- function(k = 400) {
     theta_ricker
   )
 
-  # covariate effects based on six-month cumulativee discharge
-  #    - associations modified from Bino et al. (2015, Sci Rep; DOI: 10.1038/srep16073)
-  #    - modifications to retain same overall shape of curves but based on
-  #        proportional changes in survival, assuming same relative change in
-  #        juveniles and adults
-  #    - x is cumulative discharge over preceding 6 months, in GL
+  # covariate effects based on CTF events, spring/summer/winter flows, and extremes (max flows and variability)
   survival_effects <- function(mat, x, ...) {
 
-    # set parameters
-    alpha <- -7.38
-    beta <- 0.0008
-    gamma <- -0.0001
-    delta <- 0.013
-    offset <- 1.05
-    ave_weight <- 680
+    # default is no change
+    scale <- 1
 
-    # calculate proportional change in survival
-    term1 <- alpha + delta * ave_weight + offset
-    term2 <- beta * x + gamma * (x ^ 2)
-    effect1 <- exp(term1) / (1 + exp(term1))
-    effect <- exp(term1 + term2) / (1 + exp(term1 + term2))
-    effect <- effect / effect1
+    # add negative effects of low spring/summer/winter flows
+    scale <- c(1 / (1 + exp(- 8 * x$proportional_spring_flow)))
+    scale <- c(1 / (1 + exp(- 20 * x$proportional_summer_flow)))
+    scale <- c(1 / (1 + exp(- 5 * x$proportional_winter_flow)))
 
-    # calculate and return absolute change in survival
-    mat * effect
+    # and some negative effects of extremes
+    scale <- c(1 / (1 + exp(-500 * (1 / x$proportional_maximum_flow))))
+    scale <- c(1 / (1 + exp(-750 * (1 / x$spawning_flow_variability))))
+
+    # add CTF effects
+    scale <- c(1 / (1 + exp(-100 * (1 / x$ctf_duration))))
+
+    # and return
+    mat * scale
 
   }
 
   # combine into a covariates object
   covars <- covariates(
-    masks = survival(popmat),
+    masks = combine(survival(mat), transition(mat)),
     funs = survival_effects
   )
 
   # define environmental stochasticity
   envstoch <- environmental_stochasticity(
     masks = list(
-      survival(popmat),
+      combine(survival(mat), transition(mat)),
       reproduction(popmat)
     ),
     funs = list(
@@ -159,18 +154,17 @@ template_platypus <- function(k = 400) {
     )
   )
 
-  # optional: use density_dependence_n to include predation
-  #   or translocations
-  # dd_n_masks <- list(
-  #   all_classes(popmat)
-  # )
-  # dd_n_fns <- list(
-  #   add_remove
-  # )
-  # dens_depend_n <- density_dependence_n(
-  #   masks = dd_n_masks,
-  #   funs = dd_n_fns
-  # )
+  # use density_dependence_n to include translocations
+  dd_n_masks <- list(
+    all_classes(popmat, dims = 2)
+  )
+  dd_n_fns <- list(
+    add_remove
+  )
+  dens_depend_n <- density_dependence_n(
+    masks = dd_n_masks,
+    funs = dd_n_fns
+  )
 
   # nolint start
   # print a message to ensure args are included
@@ -185,7 +179,7 @@ template_platypus <- function(k = 400) {
     environmental_stochasticity = envstoch,
     demographic_stochasticity = demostoch,
     density_dependence = dens_depend,
-    density_dependence_n = NULL
+    density_dependence_n = dens_depend_n
   )
 
 }
@@ -196,47 +190,23 @@ template_platypus <- function(k = 400) {
 #'
 #' @export
 #'
-#' @param n an integer, vector of integers, or list specifying the
-#'   number of juvenile and adult platypus to add or
-#'   remove in any given year. If a single integer is provided,
-#'   all age classes are assumed to have the same number of
-#'   additions or removals. If a vector is provided, it must
-#'   have one value for each age class. If a list is provided,
-#'   it must have one element for each age class, with a
-#'   value for each time step. Addition versus removal is
-#'   controlled with \code{add}. Defaults to
-#'   \code{c(0, 0))}, which will specify no additions
-#'   or removals
+#' @param n an integer or list of integers specifying the
+#'   number of adult platypus to add in any given year.
+#'   If a single integer is provided,
+#'   all years are assumed to have the same number of
+#'   additions or removals. If a list is provided,
+#'   it must have one value for each year. Defaults to
+#'   \code{0}, which will specify no additions
 #' @param ntime number of time steps used in population
 #'   simulation. Defaults to \code{50} and is required
 #'   to ensure simulated additions or removals are defined
 #'   for every simulated time step
 #' @param start time step at which additions or removals start
-#'   if \code{n} is an integer or vector. Defaults to
-#'   \code{c(1, 1)}
+#'   if \code{n} is an integer. Defaults to
+#'   \code{1}
 #' @param end time step at which additions or removals finish
-#'   if \code{n} is an integer or vector. Defaults to
-#'   \code{c(1, 1)}
-#' @param add logical indicating whether individuals are
-#'   added or removed from the population. Defaults to
-#'   \code{TRUE}, which defines additions (e.g., translocation). Can
-#'   be specified as a single value, in which case all stages
-#'   are set equal, as three values, in which case stages can
-#'   differ, or as a matrix with three rows and \code{ntime}
-#'   columns, in which case the effects of \code{add} can
-#'   change through time
-#' @param p_capture probability of capture by recreational anglers,
-#'   defaults to 0, in which case recreational fishing does not
-#'   occur
-#' @param slot length slot within which Murray cod can legally
-#'   be removed by recreational anglers. Defined in millimetres,
-#'   defaults to 550-750 mm
-#' @param system one of \code{"murray"}, \code{"goulburn"}, or
-#'   \code{"campaspe"}, defining flow associations based on those
-#'   observed in the Murray River, Goulburn River (currently identical
-#'   to observations in the Murray River), or the Campaspe River
-#'   (currently based on observations in the Broken River). Defaults
-#'   to \code{"murray"}
+#'   if \code{n} is an integer. Defaults to
+#'   \code{1}
 #'
 #' @details The platypus population template requires
 #'   several additional arguments and allows several optional
@@ -244,7 +214,7 @@ template_platypus <- function(k = 400) {
 #'   \code{get_args("platypus")} and are described
 #'   individually above.
 #'
-args_platypus <- function(...) {
+args_platypus <- function(n, ntime, start, end, ...) {
 
   # helper to calculate real-valued parameters for survival
   #   simulation
@@ -273,12 +243,50 @@ args_platypus <- function(...) {
 
   }
 
+  # helper to define removals process
+  define_translocation <- function(start, end, n) {
+
+    # set up a sequence of iterations at which individuals are removed
+    if (length(n) == 1) {
+      x <- rep(0, ntime)
+      x[start:end] <- n
+      n <- x
+    } else {
+      if (length(n) != ntime) {
+        stop("if n is a vector it must have one value for each time step",
+             call. = FALSE)
+      }
+    }
+
+    # define this as a function
+    translocate <- function(obj, pop, iter) {
+
+      # return
+      list(
+        n = n[iter], add = TRUE
+      )
+
+    }
+
+    # return
+    translocate
+
+  }
+
+
   # return named list of args
   list(
 
     # add function to pre-transform unit to real and back
     environmental_stochasticity = list(
       transform_survival
+    ),
+
+    # to define additions through translocation
+    density_dependence_n = list(
+      define_translocation(
+        start = start, end = end, n = n
+      )
     )
 
   )
