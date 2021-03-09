@@ -91,7 +91,7 @@ template_platypus <- function(k = 400) {
   popmat[2, 2] <- 0.89
 
   # add reproduction
-  popmat[1, 2] <- 0.5 * 0.62 * 1.5
+  popmat[1, 2] <- 0.5 * 0.62 * 2
 
   # define custom density dependence function
   k_female <- k * 0.65     # assumes 65:35 F:M sex ratio in adults
@@ -110,16 +110,16 @@ template_platypus <- function(k = 400) {
     scale <- 1
 
     # add negative effects of low spring/summer/winter flows
-    scale <- c(1 / (1 + exp(- 8 * x$proportional_spring_flow)))
-    scale <- c(1 / (1 + exp(- 20 * x$proportional_summer_flow)))
-    scale <- c(1 / (1 + exp(- 5 * x$proportional_winter_flow)))
+    scale <- c(1 / (1 + exp(- 4 * x$proportional_spring_flow)))
+    scale <- c(1 / (1 + exp(- 6 * x$proportional_summer_flow)))
+    scale <- c(1 / (1 + exp(- 2 * x$proportional_winter_flow)))
 
     # and some negative effects of extremes
     scale <- c(1 / (1 + exp(-500 * (1 / x$proportional_maximum_flow))))
     scale <- c(1 / (1 + exp(-750 * (1 / x$spawning_flow_variability))))
 
     # add CTF effects
-    scale <- c(1 / (1 + exp(-100 * (1 / x$ctf_duration))))
+    scale <- c(1 / (1 + 100 * exp(-200 * (1 / x$ctf_duration))))
 
     # and return
     mat * scale
