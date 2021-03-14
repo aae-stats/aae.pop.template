@@ -251,6 +251,17 @@ template_macquarie_perch <- function(
       #   (days with more than 100% change from previous)
       mat <- mat * exp(-variability_param * x$spawning_variability)
 
+      # optional effect of water temperature, needs 2 consecutive days
+      #   above 16C for spawning to start, with 2 days at 18C
+      #   for optimal spawning. Need this prior to mid-December, so
+      #   assume from Sep-midDec in metrics
+      if (!is.null(x$max_twoday_temperature)) {
+        temp_effect <- 0.5 * (x$max_twoday_temperature - 16)
+        temp_effect[temp_effect < 0] <- 0
+        temp_effect[temp_effect < 1] <- 1
+        mat <- mat * temp_effect
+      }
+
       # return
       mat
 
