@@ -418,7 +418,8 @@ args_macquarie_perch <- function(
   contributing_min = 0.75,
   contributing_max = 1.0,
   recruit_failure = 0,
-  genetic_factor = 1.0
+  genetic_factor = 1.0,
+  envstoch_strength = 1.0
 ) {
 
   # expand n, start, end, add if required
@@ -513,6 +514,10 @@ args_macquarie_perch <- function(
       0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08,
       0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.07, 0.06, 0.05
     )
+
+    # recsale SDs by envstoch_strength to tone it down without
+    #   turning it off if required
+    survival_sd <- envstoch_strength * survival_sd
 
     # convert unit interval to real line equivalents
     out <- unit_to_real(
