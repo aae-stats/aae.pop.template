@@ -258,7 +258,7 @@ template_macquarie_perch <- function(
       if (!is.null(x$max_twoday_temperature)) {
         temp_effect <- 0.5 * (x$max_twoday_temperature - 16)
         temp_effect[temp_effect < 0] <- 0
-        temp_effect[temp_effect < 1] <- 1
+        temp_effect[temp_effect > 1] <- 1
         mat <- mat * temp_effect
       }
 
