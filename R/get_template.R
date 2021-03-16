@@ -3,7 +3,11 @@
 #' @title Compile population dynamics objects from a template
 #'
 #' @description Function to compile population dynamics objects from
-#   a provided template
+#'   a provided template
+#'
+#' @param sp character naming the species to be collected. Will be
+#'   partially matched to included species
+#' @param \dots additional arguments passed to the species template
 #'
 #' @export
 #'
@@ -19,7 +23,7 @@
 #'   list of processes to be passed to \code{\link[aae.pop]{dynamics}}.
 #'
 #'   User-defined species templates can optionally include arguments
-#'   passed to \code{\link[aae.pop]{simulate}}. This processed is
+#'   passed to \code{\link[aae.pop]{simulate}}. This process is
 #'   described in \code{\link{get_args}}.
 #'
 #' @examples
@@ -37,15 +41,18 @@
 #' plot(sims)
 get_template <- function(sp, ...) {
 
-  # unpack dots
-  arg_list <- list(...)
+  # collate arguments
+  args <- list(...)
 
-  # draw up relevant parameters based on corrected species name
+  # get relevant parameters based on corrected species name
   sp <- check_species_template(sp)
-  all_parameters <- do.call(get(paste0("template_", sp)), arg_list)
+  template <- do.call(get(paste0("template_", sp)), args)
 
   # return collated dynamics object
-  do.call(dynamics, all_parameters)
+  template <- list(
+    dynamics = do.call(template$dynamics, all_parameters),
+    arguments = template$arguments
+  )
 
 }
 
@@ -56,7 +63,9 @@ check_species_template <- function(x) {
   # currently implemented species
   sp_list <- c("murray_cod", "macquarie_perch", "platypus")
 
-  ## COULD PARTIALLY MATCH HERE
+  # give x a fighting chance with fuzzy matching
+  if (any(agrepl(x, sp_list)))
+    x <- sp_list[agrepl(x, sp_list)]
 
   # error if species not known
   if (!x %in% sp_list) {
@@ -65,8 +74,13 @@ check_species_template <- function(x) {
          call. = FALSE)
   }
 
-  # return species name
-  #   (only needed if using partial matching)
+  # return corrected species name
   x
 
+}
+
+# internal function: set template class
+as_template <- function(x) {
+  type <- "list"
+  as_class(x, name = "template", type = type)
 }

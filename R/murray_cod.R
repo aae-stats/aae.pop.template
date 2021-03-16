@@ -21,12 +21,58 @@ NULL
 #'   individuals matches observations in the Murray River (1300 mm),
 #'   large tributaries (e.g., Goulburn River, Campaspe River; 1100 mm),
 #'   or small tributaries (e.g., XYZ; 900 mm). Defaults to "murray"
+#' @param n an integer, vector of integers, or list specifying the
+#'   number of young-of-year, 2+, and adult fish to add or
+#'   remove in any given year. If a single integer is provided,
+#'   all age classes are assumed to have the same number of
+#'   additions or removals. If a vector is provided, it must
+#'   have one value for each age class. If a list is provided,
+#'   it must have one element for each age class, with a
+#'   value for each time step. Addition versus removal is
+#'   controlled with \code{add}. Defaults to
+#'   \code{c(0, 0, 0))}, which will specify no additions
+#'   or removals
+#' @param ntime number of time steps used in population
+#'   simulation. Defaults to \code{50} and is required
+#'   to ensure simulated additions or removals are defined
+#'   for every simulated time step
+#' @param start time step at which additions or removals start
+#'   if \code{n} is an integer or vector. Defaults to
+#'   \code{c(1, 1, 1)}
+#' @param end time step at which additions or removals finish
+#'   if \code{n} is an integer or vector. Defaults to
+#'   \code{c(1, 1, 1)}
+#' @param add logical indicating whether individuals are
+#'   added or removed from the population. Defaults to
+#'   \code{TRUE}, which defines additions (e.g., stocking). Can
+#'   be specified as a single value, in which case all stages
+#'   are set equal, as three values, in which case stages can
+#'   differ, or as a matrix with three rows and \code{ntime}
+#'   columns, in which case the effects of \code{add} can
+#'   change through time
+#' @param p_capture probability of capture by recreational anglers,
+#'   defaults to 0, in which case recreational fishing does not
+#'   occur
+#' @param slot length slot within which Murray cod can legally
+#'   be removed by recreational anglers. Defined in millimetres,
+#'   defaults to 550-750 mm
+#' @param system one of \code{"murray"}, \code{"goulburn"}, or
+#'   \code{"campaspe"}, defining flow associations based on those
+#'   observed in the Murray River, Goulburn River (currently identical
+#'   to observations in the Murray River), or the Campaspe River
+#'   (currently based on observations in the Broken River). Defaults
+#'   to \code{"murray"}
 #'
 #' @details The \code{murray_cod} population model is a mixed
 #'   age- and stage-structured model with 25 classes and includes negative
 #'   density dependence, environmental and demographic
 #'   stochasticity, and optional associations with hydrological conditions
 #'   in rivers and stocking or angling effects.
+#'
+#'   The Murray cod population template requires
+#'   several additional arguments and allows several optional
+#'   arguments. Arguments are described
+#'   individually above.
 #'
 #' @examples
 #' # define a basic model for Murray cod
@@ -40,15 +86,42 @@ NULL
 #'
 #' # plot the simulated values
 #' plot(sims)
-murray_cod <- function(k = 20000, system = "murray") {
-  get_template(sp = "murray_cod", k = k, system = system)
+murray_cod <- function(
+  k = 20000,
+  system = "murray",
+  n = c(0, 0, 0),
+  ntime = 50,
+  start = c(1, 1, 1),
+  end = c(1, 1, 1),
+  add = TRUE,
+  p_capture = 0.0,
+  slot = c(550, 750)
+) {
+  get_template(
+    sp = "murray_cod",
+    k = k,
+    system = system,
+    n = n,
+    ntime = ntime,
+    start = start,
+    end = end,
+    add = add,
+    p_capture = p_capture,
+    slot = slot
+  )
 }
 
 # internal function: define species defaults
 template_murray_cod <- function(
   k = 20000,
-  reproductive = 5:50,          # reproductive age classes
-  system = "murray"
+  system = "murray",
+  n = c(0, 0, 0),
+  ntime = 50,
+  start = c(1, 1, 1),
+  end = c(1, 1, 1),
+  add = TRUE,
+  p_capture = 0.0,
+  slot = c(550, 750)
 ) {
 
   # how many stages are we going to work with?
@@ -99,50 +172,37 @@ template_murray_cod <- function(
   }
 
   # define  a survival function
-  survival_gen <- function(
-    mat,
-    mean_real,
-    sd_real,
-    perfect_correlation = TRUE,
-    ...
-  ) {
-
-    rmultiunit_from_real(
-      n = 1,
-      mean_real = mean_real,
-      sd_real = sd_real,
-      perfect_correlation = perfect_correlation
-    )
+  survival_gen <- function(mat, ...) {
+    plogis(rnorm(length(mat), mean = qlogis(mat), sd = 0.5 * abs(qlogis(mat))))
   }
 
-  # define a reproduction function
+  # define a reproduction function, being careful with argument
+  #   names to avoid conflicts with any arguments in
+  #   survival_gen, which would then require multiple different
+  #   arguments with the same name in simulate
   reproduction_gen <- function(
     mat,
-    fec_params = c(389, 2723, 5344, 53.44),
-    early_mean,
-    early_sd,
+    early_surv = c(0.5, 0.013, 0.13),
     ...
   ) {
 
-    # estimate weights from ages
-    length_est <- estimate_length(reproductive)
-    weight_est <- estimate_weight(length_est)
+    # simulate average number of recruits based on vital rates
+    reprod <- rnorm(length(mat), mean = mat, sd = 0.25 * mat)
 
-    # simulate parameters for fecundity from weight conversion
-    x <- rnorm(n = 1, mean = fec_params[1], sd = fec_params[2])
-    y <- rnorm(n = 1, mean = fec_params[3], sd = fec_params[4])
-
-    # generate stochastic values for early life
-    #   survival (eggs, larvae, young-of-year)
-    early_surv <- rmultiunit_from_real(n = 1, mean = early_mean, sd = early_sd)
-
-    # estimate baseline, per-capita fecundity
-    reprod <- -x + y * weight_est - 69.5 * (weight_est ^ 2)
-
-    # make sure no values are negative
+    # catch any negative values
     reprod[reprod < 0] <- 0
 
-    # estimate and return reproduction estimates
+    # simulate early life survival values
+    early_surv <- plogis(
+      length(early_surv),
+      mean = qlogis(early_surv),
+      sd = abs(0.1 * qlogis(early_surv))
+    )
+    early_surv[early_surv < 0] <- 0
+    early_surv[early_surv > 1] <- 1
+
+    # add early life survival and muliply by 0.5
+    #   to account for a 50:50 sex ratio
     0.5 * reprod * prod(early_surv)
 
   }
@@ -342,20 +402,29 @@ template_murray_cod <- function(
     funs = dd_n_fns
   )
 
-  # nolint start
-  # print a message to ensure args are included
-  message('Arguments are required to simulate Murray cod dynamics.\n',
-          'Default arguments can be accessed with get_args("murray_cod").')
-  # nolint end
+  # collect arguments for species if required
+  arguments <- get_args(
+    "murray_cod",
+    n = n,
+    ntime = ntime,
+    start = start,
+    end = end,
+    add = add,
+    p_capture = p_capture,
+    slot = slot
+  )
 
-  # return template
+  # return
   list(
-    matrix = popmat,
-    covariates = covars,
-    environmental_stochasticity = envstoch,
-    demographic_stochasticity = NULL,
-    density_dependence = dens_depend,
-    density_dependence_n = dens_depend_n
+    dynamics = list(
+      matrix = popmat,
+      covariates = covars,
+      environmental_stochasticity = envstoch,
+      demographic_stochasticity = NULL,
+      density_dependence = dens_depend,
+      density_dependence_n = dens_depend_n
+    ),
+    arguments = arguments
   )
 
 }
@@ -365,54 +434,6 @@ template_murray_cod <- function(
 #' @importFrom stats pnorm rnorm runif
 #'
 #' @export
-#'
-#' @param n an integer, vector of integers, or list specifying the
-#'   number of young-of-year, 2+, and adult fish to add or
-#'   remove in any given year. If a single integer is provided,
-#'   all age classes are assumed to have the same number of
-#'   additions or removals. If a vector is provided, it must
-#'   have one value for each age class. If a list is provided,
-#'   it must have one element for each age class, with a
-#'   value for each time step. Addition versus removal is
-#'   controlled with \code{add}. Defaults to
-#'   \code{c(0, 0, 0))}, which will specify no additions
-#'   or removals
-#' @param ntime number of time steps used in population
-#'   simulation. Defaults to \code{50} and is required
-#'   to ensure simulated additions or removals are defined
-#'   for every simulated time step
-#' @param start time step at which additions or removals start
-#'   if \code{n} is an integer or vector. Defaults to
-#'   \code{c(1, 1, 1)}
-#' @param end time step at which additions or removals finish
-#'   if \code{n} is an integer or vector. Defaults to
-#'   \code{c(1, 1, 1)}
-#' @param add logical indicating whether individuals are
-#'   added or removed from the population. Defaults to
-#'   \code{TRUE}, which defines additions (e.g., stocking). Can
-#'   be specified as a single value, in which case all stages
-#'   are set equal, as three values, in which case stages can
-#'   differ, or as a matrix with three rows and \code{ntime}
-#'   columns, in which case the effects of \code{add} can
-#'   change through time
-#' @param p_capture probability of capture by recreational anglers,
-#'   defaults to 0, in which case recreational fishing does not
-#'   occur
-#' @param slot length slot within which Murray cod can legally
-#'   be removed by recreational anglers. Defined in millimetres,
-#'   defaults to 550-750 mm
-#' @param system one of \code{"murray"}, \code{"goulburn"}, or
-#'   \code{"campaspe"}, defining flow associations based on those
-#'   observed in the Murray River, Goulburn River (currently identical
-#'   to observations in the Murray River), or the Campaspe River
-#'   (currently based on observations in the Broken River). Defaults
-#'   to \code{"murray"}
-#'
-#' @details The Murray cod population template requires
-#'   several additional arguments and allows several optional
-#'   arguments. Arguments can be defined with a call to
-#'   \code{get_args("murray_cod")} and are described
-#'   individually above.
 #'
 args_murray_cod <- function(
   n = c(0, 0, 0),
@@ -492,61 +513,8 @@ args_murray_cod <- function(
 
   }
 
-  # define mean early-life survival
-  early_surv <- c(0.5, 0.012, 0.38, 0.31)
-
-  # force evaluation of early-life survival
-  force(early_surv)
-
-  # helper to calculate real-valued parameters for survival
-  #   simulation
-  transform_survival <- function(obj, pop, iter) {
-
-    # pull out the population matrix in the current time step
-    mat <- obj$matrix
-    if (is.list(mat))
-      mat <- mat[[iter]]
-
-    # wrap up all survival means and SDs, including early life
-    #  (this allows a single call to unit_to_real, which is slow)
-    survival_mean <- c(
-      early_surv,  # early life survival
-      mat[transition(mat)]    # from population matrix in current time step
-    )
-    survival_sd <- c(
-      0.2 * survival_mean[1:7],
-      0.15 * survival_mean[8:10],
-      0.1 * survival_mean[11:length(survival_mean)]
-    )
-
-    # convert unit interval to real line equivalents
-    out <- unit_to_real(
-      unit_mean = survival_mean,
-      unit_sd = survival_sd
-    )
-
-    # separate early life from other estimates
-    idx <- seq_len(nrow(out)) > 4
-
-    # return
-    list(
-      mean_real = out[idx, 1],    # for survival_gen
-      sd_real = out[idx, 2],      # for survival_gen
-      early_mean = out[!idx, 1],  # for reproduction_gen
-      early_sd = out[!idx, 2]     # for reproduction_gen
-    )
-
-  }
-
   # return named list of args
   list(
-
-    # set contributing as random uniform on 0.75-1.0 by default
-    # set recruit_failure at 0 by default
-    # add function to pre-transform unit to real and back
-    environmental_stochasticity = list(
-      transform_survival
-    ),
 
     # to include additions or removals of individuals
     density_dependence_n = list(

@@ -20,12 +20,33 @@ NULL
 #'   multiplied by \code{0.65} to give adult female carrying
 #'   capacity, assuming a 65:35 female:male sex ratio in
 #'   adult platypus
+#' @param n an integer or list of integers specifying the
+#'   number of adult platypus to add in any given year.
+#'   If a single integer is provided,
+#'   all years are assumed to have the same number of
+#'   additions or removals. If a list is provided,
+#'   it must have one value for each year. Defaults to
+#'   \code{0}, which will specify no additions
+#' @param ntime number of time steps used in population
+#'   simulation. Defaults to \code{50} and is required
+#'   to ensure simulated additions or removals are defined
+#'   for every simulated time step
+#' @param start time step at which additions or removals start
+#'   if \code{n} is an integer. Defaults to
+#'   \code{1}
+#' @param end time step at which additions or removals finish
+#'   if \code{n} is an integer. Defaults to
+#'   \code{1}
 #'
 #' @details The \code{platypus} population model is a
 #'   stage-structured model with 2 classes and includes negative
 #'   density dependence, environmental and demographic
 #'   stochasticity, and optional associations with hydrological
 #'   conditions, instream and riparian habitat, and predators.
+#'
+#'   The platypus population template requires
+#'   several additional arguments and allows several optional
+#'   arguments, described individually above.
 #'
 #' @examples
 #' # define a basic model for platypus
@@ -39,32 +60,27 @@ NULL
 #'
 #' # plot the simulated values
 #' plot(sims)
-platypus <- function(k = 400) {
-  get_template(sp = "platypus", k = k)
+platypus <- function(k = 400, n = 0, ntime = 50, start = 1, end = 1) {
+  get_template(
+    sp = "platypus",
+    k = k,
+    n = n,
+    ntime = ntime,
+    start = start,
+    end = end
+  )
 }
 
 # internal function: define species defaults
-template_platypus <- function(k = 400) {
+template_platypus <- function(k = 400, n = 0, ntime = 50, start = 1, end = 1) {
 
   # how many stages are we going to work with?
   nstage <- 2
 
   # define  a survival function
-  survival_gen <- function(
-    mat,
-    mean_real,
-    sd_real,
-    perfect_correlation = TRUE,
-    ...
-  ) {
-
-    rmultiunit_from_real(
-      n = 1,
-      mean_real = mean_real,
-      sd_real = sd_real,
-      perfect_correlation = perfect_correlation
-    )
-
+  # define  a survival function
+  survival_gen <- function(mat, ...) {
+    plogis(rnorm(length(mat), mean = qlogis(mat), sd = 0.5 * abs(qlogis(mat))))
   }
 
   # define a reproduction function
@@ -103,7 +119,8 @@ template_platypus <- function(k = 400) {
     theta_ricker
   )
 
-  # covariate effects based on CTF events, spring/summer/winter flows, and extremes (max flows and variability)
+  # covariate effects based on CTF events, spring/summer/winter flows,
+  #   and extremes (max flows and variability)
   survival_effects <- function(mat, x, ...) {
 
     # default is no change
@@ -166,20 +183,26 @@ template_platypus <- function(k = 400) {
     funs = dd_n_fns
   )
 
-  # nolint start
-  # print a message to ensure args are included
-  message('Arguments are required to simulate platypus dynamics.\n',
-          'Default arguments can be accessed with get_args("platypus").')
-  # nolint end
+  # collect arguments for species if required
+  arguments <- get_args(
+    "platypus",
+    n = n,
+    ntime = ntime,
+    start = start,
+    end = end
+  )
 
   # return template
   list(
-    matrix = popmat,
-    covariates = covars,
-    environmental_stochasticity = envstoch,
-    demographic_stochasticity = demostoch,
-    density_dependence = dens_depend,
-    density_dependence_n = dens_depend_n
+    dynamics = list(
+      matrix = popmat,
+      covariates = covars,
+      environmental_stochasticity = envstoch,
+      demographic_stochasticity = demostoch,
+      density_dependence = dens_depend,
+      density_dependence_n = dens_depend_n
+    ),
+    arguments = arguments
   )
 
 }
@@ -190,58 +213,7 @@ template_platypus <- function(k = 400) {
 #'
 #' @export
 #'
-#' @param n an integer or list of integers specifying the
-#'   number of adult platypus to add in any given year.
-#'   If a single integer is provided,
-#'   all years are assumed to have the same number of
-#'   additions or removals. If a list is provided,
-#'   it must have one value for each year. Defaults to
-#'   \code{0}, which will specify no additions
-#' @param ntime number of time steps used in population
-#'   simulation. Defaults to \code{50} and is required
-#'   to ensure simulated additions or removals are defined
-#'   for every simulated time step
-#' @param start time step at which additions or removals start
-#'   if \code{n} is an integer. Defaults to
-#'   \code{1}
-#' @param end time step at which additions or removals finish
-#'   if \code{n} is an integer. Defaults to
-#'   \code{1}
-#'
-#' @details The platypus population template requires
-#'   several additional arguments and allows several optional
-#'   arguments. Arguments can be defined with a call to
-#'   \code{get_args("platypus")} and are described
-#'   individually above.
-#'
-args_platypus <- function(n = 0, ntime = 50, start = 1, end = 1, ...) {
-
-  # helper to calculate real-valued parameters for survival
-  #   simulation
-  transform_survival <- function(obj, pop, iter) {
-
-    # pull out the population matrix in the current time step
-    mat <- obj$matrix
-    if (is.list(mat))
-      mat <- mat[[iter]]
-
-    # wrap up all survival means and SDs
-    survival_mean <- c(mat[2, 1], mat[2, 2])
-    survival_sd <- c(0.01, 0.05)
-
-    # convert unit interval to real line equivalents
-    out <- unit_to_real(
-      unit_mean = survival_mean,
-      unit_sd = survival_sd
-    )
-
-    # return
-    list(
-      mean_real = out[, 1],
-      sd_real = out[, 2]
-    )
-
-  }
+args_platypus <- function(n = 0, ntime = 50, start = 1, end = 1) {
 
   # helper to define removals process
   define_translocation <- function(start, end, n) {
@@ -276,11 +248,6 @@ args_platypus <- function(n = 0, ntime = 50, start = 1, end = 1, ...) {
 
   # return named list of args
   list(
-
-    # add function to pre-transform unit to real and back
-    environmental_stochasticity = list(
-      transform_survival
-    ),
 
     # to define additions through translocation
     density_dependence_n = list(

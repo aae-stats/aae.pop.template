@@ -25,6 +25,9 @@
 #'   the processes required by \code{dynamics} or
 #'   \code{multispecies}.
 #'
+#'   The \code{get_args} function has been deprecated, and is now
+#'   called directly within a call to \code{get_template}.
+#'
 #' @examples
 #' # define a basic model for Macquarie perch with
 #' #   carrying capacity = 1000
@@ -72,7 +75,9 @@ check_species_args <- function(x) {
   # currently implemented species
   sp_list <- c("macquarie_perch", "murray_cod", "platypus")
 
-  ## COULD PARTIALLY MATCH HERE
+  # give x a fighting chance with fuzzy matching
+  if (any(agrepl(x, sp_list)))
+    x <- sp_list[agrepl(x, sp_list)]
 
   # error if species not known
   if (!x %in% sp_list) {

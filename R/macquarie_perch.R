@@ -31,6 +31,46 @@ NULL
 #'   provided when defining the population model with
 #'   \code{macquarie_perch} and again when defining arguments with
 #'   \code{get_args("macquarie_perch")}
+#' @param n an integer, vector of integers, or list specifying the
+#'   number of young-of-year, 2+, and adult fish to add or
+#'   remove in any given year. If a single integer is provided,
+#'   all age classes are assumed to have the same number of
+#'   additions or removals. If a vector is provided, it must
+#'   have one value for each age class. If a list is provided,
+#'   it must have one element for each age class, with a
+#'   value for each time step. Addition versus removal is
+#'   controlled with \code{add}. Defaults to
+#'   \code{c(0, 0, 0))}, which will specify no additions
+#'   or removals
+#' @param ntime number of time steps used in population
+#'   simulation. Defaults to \code{50} and is required
+#'   to ensure simulated additions or removals are defined
+#'   for every simulated time step
+#' @param start time step at which additions or removals start
+#'   if \code{n} is an integer or vector. Defaults to
+#'   \code{c(1, 1, 1)}
+#' @param end time step at which additions or removals finish
+#'   if \code{n} is an integer or vector. Defaults to
+#'   \code{c(1, 1, 1)}
+#' @param add logical indicating whether individuals are
+#'   added or removed from the population. Defaults to
+#'   \code{TRUE}, which defines additions (e.g., stocking). Can
+#'   be specified as a single value, in which case all stages
+#'   are set equal, as three values, in which case stages can
+#'   differ, or as a matrix with three rows and \code{ntime}
+#'   columns, in which case the effects of \code{add} can
+#'   change through time
+#' @param allee_strength strength of Allee effect. Defaults
+#'   to \code{1}. See \insertCite{todd_lint15}{aae.pop.templates}
+#'   for details
+#' @param contributing_min minimum proportion of adult females
+#'   contributing to reproduction at any given time step.
+#'   Defaults to \code{1.0}
+#' @param contributing_max maximum proportion of adult females
+#'   contributing to reproduction at any given time step.
+#'   Defaults to \code{1.0}
+#' @param recruit_failure probability of complete recruitment
+#'   failure at any given time step. Defaults to \code{0}
 #'
 #' @details The \code{macquarie_perch} population model is an
 #'   age-structured model with 30 age classes and includes negative
@@ -38,6 +78,11 @@ NULL
 #'   stochasticity, and optional associations with hydrological conditions
 #'   in rivers or lakes (controlled with the \code{system} parameter)
 #'   and stocking or angling effects.
+#'
+#'   The Macquarie perch population template requires
+#'   several additional arguments and allows several optional
+#'   arguments. Arguments are described
+#'   individually above.
 #'
 #'   The full population model is developed and described in
 #'   \insertCite{todd_lint15}{aae.pop.templates}
@@ -62,13 +107,33 @@ macquarie_perch <- function(
   k = 1000,
   reproductive = 3:30,
   system = "lake",
-  genetic_factor = 1.0
+  genetic_factor = 1.0,
+  n = c(0, 0, 0),
+  ntime = 50,
+  start = c(1, 1, 1),
+  end = c(1, 1, 1),
+  add = TRUE,
+  allee_strength = 1,
+  contributing_min = 0.75,
+  contributing_max = 1.0,
+  recruit_failure = 0
 ) {
   get_template(
     sp = "macquarie_perch",
     k = k,
     reproductive = reproductive,
-    system = system)
+    system = system,
+    genetic_factor = genetic_factor,
+    n = n,
+    ntime = ntime,
+    start = start,
+    end = end,
+    add = add,
+    allee_strength = allee_strength,
+    contributing_min = contributing_min,
+    contributing_max = contributing_max,
+    recruit_failure = recruit_failure
+  )
 }
 
 # internal function: define species defaults
@@ -76,7 +141,16 @@ template_macquarie_perch <- function(
   k = 1000,                     # adult female carrying capacity
   reproductive = 3:30,          # reproductive age classes
   system = "lake",              # define covariate type by system
-  genetic_factor = 1.0          # define change in early survival
+  genetic_factor = 1.0,         # define change in early survival
+  n = c(0, 0, 0),
+  ntime = 50,
+  start = c(1, 1, 1),
+  end = c(1, 1, 1),
+  add = TRUE,
+  allee_strength = 1,
+  contributing_min = 0.75,
+  contributing_max = 1.0,
+  recruit_failure = 0
 ) {
 
   # set default system
@@ -89,15 +163,8 @@ template_macquarie_perch <- function(
 
   # define a survival function, adding dots to soak up extra
   #    arguments within simulate
-  survival_gen <- function(
-    mat, mean_real, sd_real, perfect_correlation = TRUE, ...
-  ) {
-    rmultiunit_from_real(
-      n = 1,
-      mean_real = mean_real,
-      sd_real = sd_real,
-      perfect_correlation = perfect_correlation
-    )
+  survival_gen <- function(mat, ...) {
+    plogis(rnorm(length(mat), mean = qlogis(mat), sd = 0.5 * abs(qlogis(mat))))
   }
 
   # define a reproduction function, being careful with argument
@@ -106,32 +173,27 @@ template_macquarie_perch <- function(
   #   arguments with the same name in simulate
   reproduction_gen <- function(
     mat,
-    fec_mean = c(1.68, -0.302, 2.886),
-    fec_sd = c(0.3, 0.05, 0.15),
-    early_mean,
-    early_sd,
+    early_surv = c(0.5, 0.013, 0.13),
     recruit_failure = 0.25,
     contributing_min = 0.5,
     contributing_max = 1.0,
     ...
   ) {
 
-    # generate stochastic values for early life
-    #   survival (eggs, larvae, young-of-year)
-    early_surv <- rmultiunit_from_real(n = 1, mean = early_mean, sd = early_sd)
+    # simulate average number of recruits based on vital rates
+    reprod <- rnorm(length(mat), mean = mat, sd = 0.25 * mat)
 
-    # otherwise draw random variates for the three model parameters
-    y1 <- rnorm(n = 1, mean = fec_mean[1], sd = fec_sd[1])
-    y2 <- rnorm(n = 1, mean = fec_mean[2], sd = fec_sd[2])
-    y3 <- rnorm(n = 1, mean = fec_mean[3], sd = fec_sd[3])
+    # catch any negative values
+    reprod[reprod < 0] <- 0
 
-    # generate reproduction estimates for all adult age classes, incorporating
-    #   stochastic early life estimates
-    y2_term <- exp(y2 %o% reproductive)
-    y1_y2 <- log(
-      43.15 * exp(sweep(y2_term, 1, -y1, "*"))
+    # simulate early life survival values
+    early_surv <- plogis(
+      length(early_surv),
+      mean = qlogis(early_surv),
+      sd = abs(0.1 * qlogis(early_surv))
     )
-    reprod <- exp(sweep(2.295 * y1_y2, 1, y3, "+"))
+    early_surv[early_surv < 0] <- 0
+    early_surv[early_surv > 1] <- 1
 
     # did recruitment fail?
     recruit_binary <- ifelse(recruit_failure >= runif(1), 0, 1)
@@ -252,15 +314,13 @@ template_macquarie_perch <- function(
       mat <- mat * exp(-variability_param * x$spawning_variability)
 
       # optional effect of water temperature, needs 2 consecutive days
-      #   above 16C for spawning to start, with 2 days at 18C
-      #   for optimal spawning. Need this prior to mid-December, so
-      #   assume from Sep-midDec in metrics
-      if (!is.null(x$max_twoday_temperature)) {
-        temp_effect <- 0.5 * (x$max_twoday_temperature - 16)
-        temp_effect[temp_effect < 0] <- 0
-        temp_effect[temp_effect > 1] <- 1
-        mat <- mat * temp_effect
-      }
+      #   above 16C for spawning to start, with occurrence time within
+      #   the spawning period altering the probability of spawning.
+      # Optionally also includes survival over 15 days following
+      #   spawning (in metric calculation) but that is probably
+      #   double-counting the egg and larval survival phase
+      if (!is.null(x$temperature_effect))
+        mat <- mat * x$temperature_effect
 
       # return
       mat
@@ -335,20 +395,32 @@ template_macquarie_perch <- function(
     funs = c(recruit_effects, survival_effects)
   )
 
-  # nolint start
-  # print a message to ensure args are included
-  message('Arguments are required to simulate Macquarie perch dynamics.\n',
-          'Default arguments can be accessed with get_args("macquarie_perch").')
-  # nolint end
+  # collect arguments for species if required
+  arguments <- get_args(
+    "macquarie_perch",
+    n = n,
+    ntime = ntime,
+    start = start,
+    end = end,
+    add = add,
+    allee_strength = allee_strength,
+    contributing_min = contributing_min,
+    contributing_max = contributing_max,
+    recruit_failure = recruit_failure,
+    genetic_factor = genetic_factor
+  )
 
   # return
   list(
-    matrix = popmat,
-    covariates = covars,
-    environmental_stochasticity = envstoch,
-    demographic_stochasticity = NULL,
-    density_dependence = dens_depend,
-    density_dependence_n = dens_depend_n
+    dynamics = list(
+      matrix = popmat,
+      covariates = covars,
+      environmental_stochasticity = envstoch,
+      demographic_stochasticity = NULL,
+      density_dependence = dens_depend,
+      density_dependence_n = dens_depend_n
+    ),
+    arguments = arguments
   )
 
 }
@@ -358,55 +430,6 @@ template_macquarie_perch <- function(
 #' @importFrom stats pnorm rnorm runif
 #'
 #' @export
-#'
-#' @param n an integer, vector of integers, or list specifying the
-#'   number of young-of-year, 2+, and adult fish to add or
-#'   remove in any given year. If a single integer is provided,
-#'   all age classes are assumed to have the same number of
-#'   additions or removals. If a vector is provided, it must
-#'   have one value for each age class. If a list is provided,
-#'   it must have one element for each age class, with a
-#'   value for each time step. Addition versus removal is
-#'   controlled with \code{add}. Defaults to
-#'   \code{c(0, 0, 0))}, which will specify no additions
-#'   or removals
-#' @param ntime number of time steps used in population
-#'   simulation. Defaults to \code{50} and is required
-#'   to ensure simulated additions or removals are defined
-#'   for every simulated time step
-#' @param start time step at which additions or removals start
-#'   if \code{n} is an integer or vector. Defaults to
-#'   \code{c(1, 1, 1)}
-#' @param end time step at which additions or removals finish
-#'   if \code{n} is an integer or vector. Defaults to
-#'   \code{c(1, 1, 1)}
-#' @param add logical indicating whether individuals are
-#'   added or removed from the population. Defaults to
-#'   \code{TRUE}, which defines additions (e.g., stocking). Can
-#'   be specified as a single value, in which case all stages
-#'   are set equal, as three values, in which case stages can
-#'   differ, or as a matrix with three rows and \code{ntime}
-#'   columns, in which case the effects of \code{add} can
-#'   change through time
-#' @param allee_strength strength of Allee effect. Defaults
-#'   to \code{1}. See \insertCite{todd_lint15}{aae.pop.templates}
-#'   for details
-#' @param contributing_min minimum proportion of adult females
-#'   contributing to reproduction at any given time step.
-#'   Defaults to \code{1.0}
-#' @param contributing_max maximum proportion of adult females
-#'   contributing to reproduction at any given time step.
-#'   Defaults to \code{1.0}
-#' @param recruit_failure probability of complete recruitment
-#'   failure at any given time step. Defaults to \code{0}
-#' @param genetic_factor proportional change in early life
-#'   survival due to genetic mixing
-#'
-#' @details The Macquarie perch population template requires
-#'   several additional arguments and allows several optional
-#'   arguments. Arguments can be defined with a call to
-#'   \code{get_args("macquarie_perch")} and are described
-#'   individually above.
 #'
 args_macquarie_perch <- function(
   n = c(0, 0, 0),
@@ -418,8 +441,7 @@ args_macquarie_perch <- function(
   contributing_min = 0.75,
   contributing_max = 1.0,
   recruit_failure = 0,
-  genetic_factor = 1.0,
-  envstoch_strength = 1.0
+  genetic_factor = 1.0
 ) {
 
   # expand n, start, end, add if required
@@ -490,54 +512,6 @@ args_macquarie_perch <- function(
 
   }
 
-  early_surv <- c(0.5, 0.013, 0.13)
-
-  # helper to calculate real-valued parameters for survival
-  #   simulation
-  transform_survival <- function(obj, pop, iter) {
-
-    # pull out the population matrix in the current time step
-    mat <- obj$matrix
-    if (is.list(mat))
-      mat <- mat[[iter]]
-
-    # wrap up all survival means and SDs, including early life
-    #  (this allows a single call to unit_to_real, which is slow)
-    survival_mean <- c(
-      genetic_factor * early_surv,  # early life survival with gene mixing
-      mat[transition(mat)]    # from population matrix in current time step
-    )
-
-    survival_sd <- c(
-      0.1, 0.007, 0.028,  # early life
-      0.05, 0.09, 0.11, 0.10, 0.10, 0.07, 0.08, 0.08, 0.08,
-      0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08,
-      0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.07, 0.06, 0.05
-    )
-
-    # recsale SDs by envstoch_strength to tone it down without
-    #   turning it off if required
-    survival_sd <- envstoch_strength * survival_sd
-
-    # convert unit interval to real line equivalents
-    out <- unit_to_real(
-      unit_mean = survival_mean,
-      unit_sd = survival_sd
-    )
-
-    # separate early life from other estimates
-    idx <- seq_len(nrow(out)) > 3
-
-    # return
-    list(
-      mean_real = out[idx, 1],    # for survival_gen
-      sd_real = out[idx, 2],      # for survival_gen
-      early_mean = out[!idx, 1],  # for reproduction_gen
-      early_sd = out[!idx, 2]     # for reproduction_gen
-    )
-
-  }
-
   # return named list of args
   list(
 
@@ -546,12 +520,10 @@ args_macquarie_perch <- function(
 
     # set contributing as random uniform on 0.75-1.0 by default
     # set recruit_failure at 0 by default
-    # add function to pre-transform unit to real and back
     environmental_stochasticity = list(
       contributing_min = contributing_min,
       contributing_max = contributing_max,
-      recruit_failure = recruit_failure,
-      transform_survival
+      recruit_failure = recruit_failure
     ),
 
     # to include additions or removals of individuals
