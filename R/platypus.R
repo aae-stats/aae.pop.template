@@ -124,9 +124,9 @@ template_platypus <- function(k = 400, n = 0, ntime = 50, start = 1, end = 1) {
   survival_effects <- function(
     mat,
     x,
-    baseline = c(-10, -10, -10),
-    extreme = c(-20, -20),
-    ctf = c(20, -200),
+    baseline = c(-10, -10, -100),
+    extreme = c(-500, -200),
+    ctf = c(20, -100),
     ...
   ) {
 
