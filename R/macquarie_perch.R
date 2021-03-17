@@ -173,7 +173,6 @@ template_macquarie_perch <- function(
   #   arguments with the same name in simulate
   reproduction_gen <- function(
     mat,
-    early_surv = c(0.5, 0.013, 0.13),
     recruit_failure = 0.25,
     contributing_min = 0.5,
     contributing_max = 1.0,
@@ -185,17 +184,6 @@ template_macquarie_perch <- function(
 
     # catch any negative values
     reprod[reprod < 0] <- 0
-
-    # simulate early life survival values
-    early_surv <- plogis(
-      rnorm(
-        length(early_surv),
-        mean = qlogis(early_surv),
-        sd = abs(0.1 * qlogis(early_surv))
-      )
-    )
-    early_surv[early_surv < 0] <- 0
-    early_surv[early_surv > 1] <- 1
 
     # did recruitment fail?
     recruit_binary <- ifelse(recruit_failure >= runif(1), 0, 1)
@@ -213,7 +201,7 @@ template_macquarie_perch <- function(
 
     # add early life survival and muliply by 0.5
     #   to account for a 50:50 sex ratio
-    0.5 * recruit_binary * contributing * reprod * prod(early_surv)
+    0.5 * recruit_binary * contributing * reprod
 
   }
 
