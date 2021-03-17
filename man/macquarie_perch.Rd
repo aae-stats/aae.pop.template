@@ -9,7 +9,16 @@ macquarie_perch(
   k = 1000,
   reproductive = 3:30,
   system = "lake",
-  genetic_factor = 1
+  genetic_factor = 1,
+  n = c(0, 0, 0),
+  ntime = 50,
+  start = c(1, 1, 1),
+  end = c(1, 1, 1),
+  add = TRUE,
+  allee_strength = 1,
+  contributing_min = 0.75,
+  contributing_max = 1,
+  recruit_failure = 0
 )
 
 args_macquarie_perch(
@@ -38,8 +47,14 @@ conditions. Covariate associations are included in simulations
 only if covariates are provided to \code{\link[aae.pop]{simulate}}
 through the \code{args} argument}
 
-\item{genetic_factor}{proportional change in early life
-survival due to genetic mixing}
+\item{genetic_factor}{positive real value representing proportional
+changes in early life (egg, larvae, young-of-year) survival,
+included here to allow scenarios of genetic mixing of Macquarie
+perch populations (e.g., \insertCite{lutz20}{aae.pop.templates}).
+Note that non-default values of \code{genetic_factor} must be
+provided when defining the population model with
+\code{macquarie_perch} and again when defining arguments with
+\code{get_args("macquarie_perch")}}
 
 \item{n}{an integer, vector of integers, or list specifying the
 number of young-of-year, 2+, and adult fish to add or
@@ -105,14 +120,13 @@ The \code{macquarie_perch} population model is an
   in rivers or lakes (controlled with the \code{system} parameter)
   and stocking or angling effects.
 
+  The Macquarie perch population template requires
+  several additional arguments and allows several optional
+  arguments. Arguments are described
+  individually above.
+
   The full population model is developed and described in
   \insertCite{todd_lint15}{aae.pop.templates}
-
-The Macquarie perch population template requires
-  several additional arguments and allows several optional
-  arguments. Arguments can be defined with a call to
-  \code{get_args("macquarie_perch")} and are described
-  individually above.
 }
 \examples{
 # define a basic model for Macquarie perch with

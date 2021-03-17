@@ -6,8 +6,15 @@
 \usage{
 get_template(sp, ...)
 }
+\arguments{
+\item{sp}{character naming the species to be collected. Will be
+partially matched to included species}
+
+\item{\dots}{additional arguments passed to the species template}
+}
 \description{
 Function to compile population dynamics objects from
+  a provided template
 }
 \details{
 In most cases, \code{get_template} will not be required
@@ -22,7 +29,7 @@ In most cases, \code{get_template} will not be required
   list of processes to be passed to \code{\link[aae.pop]{dynamics}}.
 
   User-defined species templates can optionally include arguments
-  passed to \code{\link[aae.pop]{simulate}}. This processed is
+  passed to \code{\link[aae.pop]{simulate}}. This process is
   described in \code{\link{get_args}}.
 }
 \examples{

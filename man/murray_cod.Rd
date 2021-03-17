@@ -5,7 +5,17 @@
 \alias{args_murray_cod}
 \title{Parameterised Murray cod population model}
 \usage{
-murray_cod(k = 20000, system = "murray")
+murray_cod(
+  k = 20000,
+  system = "murray",
+  n = c(0, 0, 0),
+  ntime = 50,
+  start = c(1, 1, 1),
+  end = c(1, 1, 1),
+  add = TRUE,
+  p_capture = 0,
+  slot = c(550, 750)
+)
 
 args_murray_cod(
   n = c(0, 0, 0),
@@ -86,10 +96,9 @@ The \code{murray_cod} population model is a mixed
   stochasticity, and optional associations with hydrological conditions
   in rivers and stocking or angling effects.
 
-The Murray cod population template requires
+  The Murray cod population template requires
   several additional arguments and allows several optional
-  arguments. Arguments can be defined with a call to
-  \code{get_args("murray_cod")} and are described
+  arguments. Arguments are described
   individually above.
 }
 \examples{

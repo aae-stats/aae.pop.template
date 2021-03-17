@@ -28,6 +28,9 @@ The \code{get_args} function can be used to access
   return a named list with elements corresponding to any of
   the processes required by \code{dynamics} or
   \code{multispecies}.
+
+  The \code{get_args} function has been deprecated, and is now
+  called directly within a call to \code{get_template}.
 }
 \examples{
 # define a basic model for Macquarie perch with

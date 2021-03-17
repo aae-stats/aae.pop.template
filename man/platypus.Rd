@@ -5,9 +5,9 @@
 \alias{args_platypus}
 \title{Parameterised platypus population model}
 \usage{
-platypus(k = 400)
+platypus(k = 400, n = 0, ntime = 50, start = 1, end = 1)
 
-args_platypus(...)
+args_platypus(n = 0, ntime = 50, start = 1, end = 1)
 }
 \arguments{
 \item{k}{carrying capacity. Previously estimated densities
@@ -19,17 +19,13 @@ multiplied by \code{0.65} to give adult female carrying
 capacity, assuming a 65:35 female:male sex ratio in
 adult platypus}
 
-\item{n}{an integer, vector of integers, or list specifying the
-number of juvenile and adult platypus to add or
-remove in any given year. If a single integer is provided,
-all age classes are assumed to have the same number of
-additions or removals. If a vector is provided, it must
-have one value for each age class. If a list is provided,
-it must have one element for each age class, with a
-value for each time step. Addition versus removal is
-controlled with \code{add}. Defaults to
-\code{c(0, 0))}, which will specify no additions
-or removals}
+\item{n}{an integer or list of integers specifying the
+number of adult platypus to add in any given year.
+If a single integer is provided,
+all years are assumed to have the same number of
+additions or removals. If a list is provided,
+it must have one value for each year. Defaults to
+\code{0}, which will specify no additions}
 
 \item{ntime}{number of time steps used in population
 simulation. Defaults to \code{50} and is required
@@ -37,36 +33,12 @@ to ensure simulated additions or removals are defined
 for every simulated time step}
 
 \item{start}{time step at which additions or removals start
-if \code{n} is an integer or vector. Defaults to
-\code{c(1, 1)}}
+if \code{n} is an integer. Defaults to
+\code{1}}
 
 \item{end}{time step at which additions or removals finish
-if \code{n} is an integer or vector. Defaults to
-\code{c(1, 1)}}
-
-\item{add}{logical indicating whether individuals are
-added or removed from the population. Defaults to
-\code{TRUE}, which defines additions (e.g., translocation). Can
-be specified as a single value, in which case all stages
-are set equal, as three values, in which case stages can
-differ, or as a matrix with three rows and \code{ntime}
-columns, in which case the effects of \code{add} can
-change through time}
-
-\item{p_capture}{probability of capture by recreational anglers,
-defaults to 0, in which case recreational fishing does not
-occur}
-
-\item{slot}{length slot within which Murray cod can legally
-be removed by recreational anglers. Defined in millimetres,
-defaults to 550-750 mm}
-
-\item{system}{one of \code{"murray"}, \code{"goulburn"}, or
-\code{"campaspe"}, defining flow associations based on those
-observed in the Murray River, Goulburn River (currently identical
-to observations in the Murray River), or the Campaspe River
-(currently based on observations in the Broken River). Defaults
-to \code{"murray"}}
+if \code{n} is an integer. Defaults to
+\code{1}}
 }
 \description{
 Use a pre-defined population dynamics object to
@@ -81,11 +53,9 @@ The \code{platypus} population model is a
   stochasticity, and optional associations with hydrological
   conditions, instream and riparian habitat, and predators.
 
-The platypus population template requires
+  The platypus population template requires
   several additional arguments and allows several optional
-  arguments. Arguments can be defined with a call to
-  \code{get_args("platypus")} and are described
-  individually above.
+  arguments, described individually above.
 }
 \examples{
 # define a basic model for platypus
