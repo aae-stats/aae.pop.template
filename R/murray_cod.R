@@ -194,9 +194,11 @@ template_murray_cod <- function(
 
     # simulate early life survival values
     early_surv <- plogis(
-      length(early_surv),
-      mean = qlogis(early_surv),
-      sd = abs(0.1 * qlogis(early_surv))
+      rnorm(
+        length(early_surv),
+        mean = qlogis(early_surv),
+        sd = abs(0.1 * qlogis(early_surv))
+      )
     )
     early_surv[early_surv < 0] <- 0
     early_surv[early_surv > 1] <- 1
