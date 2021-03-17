@@ -8,6 +8,7 @@
 murray_cod(
   k = 20000,
   system = "murray",
+  reproductive = 5:50,
   n = c(0, 0, 0),
   ntime = 50,
   start = c(1, 1, 1),
@@ -36,6 +37,9 @@ observed in the Murray River, Goulburn River (currently identical
 to observations in the Murray River), or the Campaspe River
 (currently based on observations in the Broken River). Defaults
 to \code{"murray"}}
+
+\item{reproductive}{integer vector defining the adult stages in the
+Murray cod population. Defaults to \code{5:50}}
 
 \item{n}{an integer, vector of integers, or list specifying the
 number of young-of-year, 2+, and adult fish to add or
@@ -78,9 +82,6 @@ occur}
 \item{slot}{length slot within which Murray cod can legally
 be removed by recreational anglers. Defined in millimetres,
 defaults to 550-750 mm}
-
-\item{reproductive}{integer vector defining the adult stages in the
-Murray cod population. Defaults to \code{5:50}}
 }
 \description{
 Use a pre-defined population dynamics object to

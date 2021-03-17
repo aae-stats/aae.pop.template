@@ -2,9 +2,12 @@
 % Please edit documentation in R/get_template.R
 \name{get_template}
 \alias{get_template}
+\alias{is.template}
 \title{Compile population dynamics objects from a template}
 \usage{
 get_template(sp, ...)
+
+is.template(x)
 }
 \arguments{
 \item{sp}{character naming the species to be collected. Will be
