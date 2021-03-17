@@ -89,6 +89,7 @@ NULL
 murray_cod <- function(
   k = 20000,
   system = "murray",
+  reproductive = 5:50,
   n = c(0, 0, 0),
   ntime = 50,
   start = c(1, 1, 1),
@@ -101,6 +102,7 @@ murray_cod <- function(
     sp = "murray_cod",
     k = k,
     system = system,
+    reproductive = reproductive,
     n = n,
     ntime = ntime,
     start = start,
@@ -115,6 +117,7 @@ murray_cod <- function(
 template_murray_cod <- function(
   k = 20000,
   system = "murray",
+  reproductive = 5:50,
   n = c(0, 0, 0),
   ntime = 50,
   start = c(1, 1, 1),
