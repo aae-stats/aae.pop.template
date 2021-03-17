@@ -50,7 +50,7 @@ get_template <- function(sp, ...) {
 
   # return collated dynamics object
   template <- list(
-    dynamics = do.call(template$dynamics, all_parameters),
+    dynamics = do.call(dynamics, template$dynamics),
     arguments = template$arguments
   )
 
