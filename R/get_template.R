@@ -48,11 +48,14 @@ get_template <- function(sp, ...) {
   sp <- check_species_template(sp)
   template <- do.call(get(paste0("template_", sp)), args)
 
-  # return collated dynamics object
+  # collate dynamics and arguments objects
   template <- list(
     dynamics = do.call(dynamics, template$dynamics),
     arguments = template$arguments
   )
+
+  # set class and return
+  as_template(template)
 
 }
 
