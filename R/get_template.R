@@ -51,7 +51,8 @@ get_template <- function(sp, ...) {
   # collate dynamics and arguments objects
   template <- list(
     dynamics = do.call(dynamics, template$dynamics),
-    arguments = template$arguments
+    arguments = template$arguments,
+    species = format_species_name(sp)
   )
 
   # set class and return
@@ -80,6 +81,38 @@ check_species_template <- function(x) {
   # return corrected species name
   x
 
+}
+
+# internal function: create printable name for species
+format_species_name <- function(x) {
+
+  # remove underscores
+  x <- gsub("_", " ", x)
+
+  # capitalise first letter
+  x <- paste0(toupper(substr(x, 1, 1)),
+              substr(x, 2, nchar(x)))
+
+  # return formatted species name
+  x
+
+}
+
+# S3 is method
+#' @rdname get_template
+#' @export
+# nolint start
+is.template <- function(x) {
+  # nolint end
+  inherits(x, "template")
+}
+
+# S3 print method
+#' @export
+# nolint start
+print.template <- function(x, ...) {
+  # nolint end
+  cat(paste0("Compiled population dynamics model template for ", x$species))
 }
 
 # internal function: set template class
