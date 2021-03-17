@@ -121,22 +121,29 @@ template_platypus <- function(k = 400, n = 0, ntime = 50, start = 1, end = 1) {
 
   # covariate effects based on CTF events, spring/summer/winter flows,
   #   and extremes (max flows and variability)
-  survival_effects <- function(mat, x, ...) {
+  survival_effects <- function(
+    mat,
+    x,
+    baseline = c(-10, -10, -10),
+    extreme = c(-20, -20),
+    ctf = c(20, -200),
+    ...
+  ) {
 
     # default is no change
     scale <- 1
 
     # add negative effects of low spring/summer/winter flows
-    scale <- c(1 / (1 + exp(- 4 * x$proportional_spring_flow)))
-    scale <- c(1 / (1 + exp(- 6 * x$proportional_summer_flow)))
-    scale <- c(1 / (1 + exp(- 2 * x$proportional_winter_flow)))
+    scale <- c(1 / (1 + exp(baseline[1] * x$proportional_spring_flow)))
+    scale <- c(1 / (1 + exp(baseline[2] * x$proportional_summer_flow)))
+    scale <- c(1 / (1 + exp(baseline[3] * x$proportional_winter_flow)))
 
     # and some negative effects of extremes
-    scale <- c(1 / (1 + exp(-500 * (1 / x$proportional_maximum_flow))))
-    scale <- c(1 / (1 + exp(-750 * (1 / x$spawning_flow_variability))))
+    scale <- c(1 / (1 + exp(extreme[1] * (1 / x$proportional_maximum_flow))))
+    scale <- c(1 / (1 + exp(extreme[2] * (1 / x$spawning_flow_variability))))
 
     # add CTF effects
-    scale <- c(1 / (1 + 100 * exp(-200 * (1 / x$ctf_duration))))
+    scale <- c(1 / (1 + ctf[1] * exp(ctf[2] * (1 / x$ctf_duration))))
 
     # and return
     mat * scale
