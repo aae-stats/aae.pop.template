@@ -195,20 +195,8 @@ template_murray_cod <- function(
     # catch any negative values
     reprod[reprod < 0] <- 0
 
-    # simulate early life survival values
-    early_surv <- plogis(
-      rnorm(
-        length(early_surv),
-        mean = qlogis(early_surv),
-        sd = abs(0.1 * qlogis(early_surv))
-      )
-    )
-    early_surv[early_surv < 0] <- 0
-    early_surv[early_surv > 1] <- 1
-
-    # add early life survival and muliply by 0.5
-    #   to account for a 50:50 sex ratio
-    0.5 * reprod * prod(early_surv)
+    # multiply by 0.5 to account for a 50:50 sex ratio
+    0.5 * reprod
 
   }
 
@@ -261,7 +249,7 @@ template_murray_cod <- function(
 
   # covariate effects based on standardised discharge metrics
   #   - associations estimated and described in Tonkin et al. 2020 (STOTEN)
-  recruitment_effects <- function(mat, x, ...) {
+  recruitment_effects <- function(mat, x, system = "murray", threshold = 0, ...) {
 
     # define system-specific coefficients
     coefs <- list(
@@ -309,6 +297,10 @@ template_murray_cod <- function(
     #   - using product, which will limit to bottlenecks
     #     (e.g., 100% mortality in any stage = 0 survival overall)
     effect <- prod(effect)
+
+    # threshold effect to avoid really small values (recruitment always
+    #   occurs for MC)
+    effect[effect < threshold] <- threshold
 
     # calculate change in fecundity
     mat <- mat * effect
