@@ -395,8 +395,7 @@ template_macquarie_perch <- function(
     allee_strength = allee_strength,
     contributing_min = contributing_min,
     contributing_max = contributing_max,
-    recruit_failure = recruit_failure,
-    genetic_factor = genetic_factor
+    recruit_failure = recruit_failure
   )
 
   # return
