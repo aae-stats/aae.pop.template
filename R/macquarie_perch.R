@@ -218,7 +218,7 @@ template_macquarie_perch <- function(
       log(43.15 * exp(- 1.68 * exp(-0.302 * reproductive))) +
       2.886) *
     0.5 *                                       # 50:50 sex ratio
-    prod(genetic_factor * c(0.5, 0.013, 0.13))  # add early life survival
+    genetic_factor * prod(c(0.5, 0.013, 0.13))  # add early life survival
 
   # define population matrix
   nclass <- length(survival_mean) + 1
@@ -229,15 +229,14 @@ template_macquarie_perch <- function(
   # define density dependence, only affects adult survival
   #   and reproductive stages
   density_masks <- list(
-    transition(popmat, dims = 2:30),
+    reproduction(popmat, dims = reproductive),
     reproduction(popmat, dims = reproductive)
   )
 
-  # top-down effects of competition for habitat, at
-  #   carrying capacity k
-  topdown_fn <- function(mat, pop, ...) {
-    sum_n <- sum(pop[reproductive])
-    ifelse(sum_n > k, k / sum_n, 1) * mat
+  # bottom-up effects of density on early survival
+  #   through competition for resources
+  bh <- function (x, pop, theta = 0.2, ...) {
+    x / (1 + theta * x * sum(pop[reproductive]) / k)
   }
 
   # positive density dependence (Allee effect)
@@ -250,7 +249,7 @@ template_macquarie_perch <- function(
   # and collate masks and functions in a single object
   dens_depend <- density_dependence(
     masks = density_masks,
-    funs = list(topdown_fn, allee_fn)
+    funs = list(bh, allee_fn)
   )
 
   # define environmental stochasticity
@@ -430,8 +429,7 @@ args_macquarie_perch <- function(
   allee_strength = 1,
   contributing_min = 0.75,
   contributing_max = 1.0,
-  recruit_failure = 0,
-  genetic_factor = 1.0
+  recruit_failure = 0
 ) {
 
   # expand n, start, end, add if required
