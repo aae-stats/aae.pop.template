@@ -103,7 +103,12 @@ template_estuary_perch <- function(
 
   # define  a survival function
   survival_gen <- function(mat, ...) {
-    plogis(rnorm(length(mat), mean = qlogis(mat), sd = 0.5 * abs(qlogis(mat))))
+    plogis(
+      rnorm(
+        length(mat),
+        mean = qlogis(mat),
+        sd = 0.5 * abs(qlogis(mat)))
+    )
   }
 
   # define a reproduction function
@@ -130,25 +135,31 @@ template_estuary_perch <- function(
 
   # add survival
   age_frequency <- (1020.23 * (seq_len(nstage) ^ -1.16)) - 13.5
-  popmat[transition(popmat)] <- age_frequency[-1] / age_frequency[-length(age_frequency)]
+  popmat[transition(popmat)] <-
+    age_frequency[-1] / age_frequency[-length(age_frequency)]
 
   # add reproduction
-  fecundity_by_age <- exp(-11.83 + 4.21 * log(384.69 * (1 - exp(-0.19 * (reproductive + 2.27)))))
-  popmat[reproduction(popmat, dims = reproductive)] <- prod(early_survival) * fecundity_by_age
+  fecundity_by_age <- exp(
+    -11.83 +
+      4.21 * log(384.69 * (1 - exp(-0.19 * (reproductive + 2.27))))
+  )
+  popmat[reproduction(popmat, dims = reproductive)] <-
+    prod(early_survival) * fecundity_by_age
 
   # define custom density dependence function
-  k_female <- k * 0.5     # assumes 50:50 F:M sex ratio in adults
   theta_ricker <- function(x, n, theta = 4, r = 0.4) {
-    x * exp(r * (1 - (n[2] / k_female) ^ theta)) / exp(r)
+    x * exp(r * (1 - (sum(n[reproductive]) / k) ^ theta)) / exp(r)
   }
   dens_depend <- density_dependence(
     reproduction(popmat),
     theta_ricker
   )
 
-  # covariate effects based on probability of spawning and larval survival
+  # covariate effects based on probability of
+  #   spawning and larval survival
   #   due to flow conditions prior to and following spawning
-  # TODO: explore ways to calculate this internally, would apply to mac perch temp
+  # TODO: explore ways to calculate this internally,
+  #   would apply to mac perch temp
   #   effects as well
   fecundity_effects <- function(
     mat,
@@ -156,7 +167,8 @@ template_estuary_perch <- function(
     ...
   ) {
 
-    # return directly scaled value because x is calculated as a probability
+    # return directly scaled value because x is calculated
+    #   as a probability
     mat * x
 
   }
@@ -194,7 +206,9 @@ template_estuary_perch <- function(
       catchable <- age_vector >= 4
 
       # binary switch to determine which ones get caught
-      caught <- rbinom(n = sum(catchable), size = 1, prob = p_capture)
+      caught <- rbinom(
+        n = sum(catchable), size = 1, prob = p_capture
+      )
 
       # which ages were caught?
       caught <- age_vector[caught == 1]
