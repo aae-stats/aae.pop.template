@@ -65,7 +65,15 @@ NULL
 #'
 #' # plot the simulated values
 #' plot(sims)
-estuary_perch <- function(k = 30000, n = 0, ntime = 50, start = 1, end = 1) {
+estuary_perch <- function(
+  k = 30000,
+  n = 0,
+  ntime = 50,
+  start = 1,
+  end = 1,
+  add = TRUE,
+  p_capture = 0.0
+) {
   get_template(
     sp = "estuary_perch",
     k = k,
@@ -77,7 +85,15 @@ estuary_perch <- function(k = 30000, n = 0, ntime = 50, start = 1, end = 1) {
 }
 
 # internal function: define species defaults
-template_estuary_perch <- function(k = 30000, n = 0, ntime = 50, start = 1, end = 1) {
+template_estuary_perch <- function(
+  k = 30000,
+  n = 0,
+  ntime = 50,
+  start = 1,
+  end = 1,
+  add = TRUE,
+  p_capture = 0.0
+) {
 
   # how many stages are we going to work with?
   nstage <- 40

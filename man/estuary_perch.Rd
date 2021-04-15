@@ -5,7 +5,15 @@
 \alias{args_estuary_perch}
 \title{Parameterised estuary perch population model}
 \usage{
-estuary_perch(k = 30000, n = 0, ntime = 50, start = 1, end = 1)
+estuary_perch(
+  k = 30000,
+  n = 0,
+  ntime = 50,
+  start = 1,
+  end = 1,
+  add = TRUE,
+  p_capture = 0
+)
 
 args_estuary_perch(
   n = c(0, 0, 0),
