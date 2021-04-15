@@ -230,7 +230,6 @@ template_estuary_perch <- function(
       add_remove(pop = pop, n = n_twoplus, add = add_twoplus),
     function(pop, n_adult, add_adult, ...)
       add_remove(pop = pop, n = n_adult, add = add_adult),
-    add_remove,
     go_fishing
   )
   dens_depend_n <- density_dependence_n(
