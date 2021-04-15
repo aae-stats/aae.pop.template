@@ -52,11 +52,8 @@ NULL
 #' # define a basic model for platypus
 #' p <- platypus()
 #'
-#' # define required arguments
-#' p_args <- get_args("platypus")
-#'
 #' # simulate from this model
-#' sims <- simulate(p, nsim = 100, args = p_args)
+#' sims <- simulate(p, nsim = 100)
 #'
 #' # plot the simulated values
 #' plot(sims)

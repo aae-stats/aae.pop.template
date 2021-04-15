@@ -30,8 +30,7 @@ args_macquarie_perch(
   allee_strength = 1,
   contributing_min = 0.75,
   contributing_max = 1,
-  recruit_failure = 0,
-  genetic_factor = 1
+  recruit_failure = 0
 )
 }
 \arguments{
@@ -133,11 +132,8 @@ The \code{macquarie_perch} population model is an
 #   carrying capacity = 1000
 mp <- macquarie_perch(k = 1000)
 
-# define required arguments
-mp_args <- get_args("macquarie_perch")
-
 # simulate from this model
-sims <- simulate(mp, nsim = 100, args = mp_args)
+sims <- simulate(mp, nsim = 100)
 
 # plot the simulated values
 plot(sims)

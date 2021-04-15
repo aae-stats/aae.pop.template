@@ -78,11 +78,8 @@ NULL
 #' # define a basic model for Murray cod
 #' mc <- murray_cod()
 #'
-#' # define required arguments
-#' mc_args <- get_args("murray_cod")
-#'
 #' # simulate from this model
-#' sims <- simulate(mc, nsim = 100, args = mc_args)
+#' sims <- simulate(mc, nsim = 100)
 #'
 #' # plot the simulated values
 #' plot(sims)
