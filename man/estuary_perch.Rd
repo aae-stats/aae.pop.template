@@ -7,18 +7,29 @@
 \usage{
 estuary_perch(k = 30000, n = 0, ntime = 50, start = 1, end = 1)
 
-args_estuary_perch(n = 0, ntime = 50, start = 1, end = 1)
+args_estuary_perch(
+  n = c(0, 0, 0),
+  ntime = 50,
+  start = c(1, 1, 1),
+  end = c(1, 1, 1),
+  add = TRUE,
+  p_capture = 0
+)
 }
 \arguments{
 \item{k}{carrying capacity}
 
-\item{n}{an integer or list of integers specifying the
-number of individuals removed in any given year.
-If a single integer is provided,
-all years are assumed to have the same number of
-additions or removals. If a list is provided,
-it must have one value for each year. Defaults to
-\code{0}, which will specify no additions}
+\item{n}{an integer, vector of integers, or list specifying the
+number of young-of-year, 2+, and adult fish to add or
+remove in any given year. If a single integer is provided,
+all age classes are assumed to have the same number of
+additions or removals. If a vector is provided, it must
+have one value for each age class. If a list is provided,
+it must have one element for each age class, with a
+value for each time step. Addition versus removal is
+controlled with \code{add}. Defaults to
+\code{c(0, 0, 0))}, which will specify no additions
+or removals}
 
 \item{ntime}{number of time steps used in population
 simulation. Defaults to \code{50} and is required
@@ -26,12 +37,25 @@ to ensure simulated additions or removals are defined
 for every simulated time step}
 
 \item{start}{time step at which additions or removals start
-if \code{n} is an integer. Defaults to
-\code{1}}
+if \code{n} is an integer or vector. Defaults to
+\code{c(1, 1, 1)}}
 
 \item{end}{time step at which additions or removals finish
-if \code{n} is an integer. Defaults to
-\code{1}}
+if \code{n} is an integer or vector. Defaults to
+\code{c(1, 1, 1)}}
+
+\item{add}{logical indicating whether individuals are
+added or removed from the population. Defaults to
+\code{TRUE}, which defines additions (e.g., stocking). Can
+be specified as a single value, in which case all stages
+are set equal, as three values, in which case stages can
+differ, or as a matrix with three rows and \code{ntime}
+columns, in which case the effects of \code{add} can
+change through time}
+
+\item{p_capture}{probability of capture by recreational anglers,
+defaults to 0, in which case recreational fishing does not
+occur}
 }
 \description{
 Use a pre-defined population dynamics object to

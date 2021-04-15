@@ -13,23 +13,38 @@ NULL
 #' @export
 #'
 #' @param k carrying capacity
-#' @param n an integer or list of integers specifying the
-#'   number of individuals removed in any given year.
-#'   If a single integer is provided,
-#'   all years are assumed to have the same number of
-#'   additions or removals. If a list is provided,
-#'   it must have one value for each year. Defaults to
-#'   \code{0}, which will specify no additions
+#' @param n an integer, vector of integers, or list specifying the
+#'   number of young-of-year, 2+, and adult fish to add or
+#'   remove in any given year. If a single integer is provided,
+#'   all age classes are assumed to have the same number of
+#'   additions or removals. If a vector is provided, it must
+#'   have one value for each age class. If a list is provided,
+#'   it must have one element for each age class, with a
+#'   value for each time step. Addition versus removal is
+#'   controlled with \code{add}. Defaults to
+#'   \code{c(0, 0, 0))}, which will specify no additions
+#'   or removals
 #' @param ntime number of time steps used in population
 #'   simulation. Defaults to \code{50} and is required
 #'   to ensure simulated additions or removals are defined
 #'   for every simulated time step
 #' @param start time step at which additions or removals start
-#'   if \code{n} is an integer. Defaults to
-#'   \code{1}
+#'   if \code{n} is an integer or vector. Defaults to
+#'   \code{c(1, 1, 1)}
 #' @param end time step at which additions or removals finish
-#'   if \code{n} is an integer. Defaults to
-#'   \code{1}
+#'   if \code{n} is an integer or vector. Defaults to
+#'   \code{c(1, 1, 1)}
+#' @param add logical indicating whether individuals are
+#'   added or removed from the population. Defaults to
+#'   \code{TRUE}, which defines additions (e.g., stocking). Can
+#'   be specified as a single value, in which case all stages
+#'   are set equal, as three values, in which case stages can
+#'   differ, or as a matrix with three rows and \code{ntime}
+#'   columns, in which case the effects of \code{add} can
+#'   change through time
+#' @param p_capture probability of capture by recreational anglers,
+#'   defaults to 0, in which case recreational fishing does not
+#'   occur
 #'
 #' @details The \code{estuary_perch} population model is a
 #'   stage-structured model with 2 classes and includes negative
@@ -148,12 +163,59 @@ template_estuary_perch <- function(k = 30000, n = 0, ntime = 50, start = 1, end 
     )
   )
 
-  # use density_dependence_n to include translocations
+  # define angling effects
+  go_fishing <- function(
+    n, p_capture, ...
+  ) {
+
+    # only needed if p_capture > 0
+    if (p_capture > 0) {
+
+      # flatten ages
+      age_vector <- rep(seq_along(n), times = n)
+
+      # which individuals are within the slot?
+      catchable <- age_vector >= 4
+
+      # binary switch to determine which ones get caught
+      caught <- rbinom(n = sum(catchable), size = 1, prob = p_capture)
+
+      # which ages were caught?
+      caught <- age_vector[caught == 1]
+
+      # remove caught individuals from relevant age classes,
+      #   checking to make sure at least one individual was
+      #   caught
+      if (length(caught) > 0) {
+        to_remove <- table(caught)
+        idx <- as.numeric(names(to_remove))
+        n[idx] <- n[idx] - to_remove
+      }
+
+    }
+
+    # return
+    n
+
+  }
+
+  # use density_dependence_n to include stocking, translocations,
+  #   and fishing
   dd_n_masks <- list(
-    all_classes(popmat, dims = 2)
+    all_classes(popmat, dim = 1),
+    all_classes(popmat, dim = 2),
+    all_classes(popmat, dim = reproductive),
+    all_classes(popmat)
   )
   dd_n_fns <- list(
-    add_remove
+    function(pop, n_yoy, add_yoy, ...)
+      add_remove(pop = pop, n = n_yoy, add = add_yoy),
+    function(pop, n_twoplus, add_twoplus, ...)
+      add_remove(pop = pop, n = n_twoplus, add = add_twoplus),
+    function(pop, n_adult, add_adult, ...)
+      add_remove(pop = pop, n = n_adult, add = add_adult),
+    add_remove,
+    go_fishing
   )
   dens_depend_n <- density_dependence_n(
     masks = dd_n_masks,
@@ -166,7 +228,9 @@ template_estuary_perch <- function(k = 30000, n = 0, ntime = 50, start = 1, end 
     n = n,
     ntime = ntime,
     start = start,
-    end = end
+    end = end,
+    add = add,
+    p_capture = p_capture
   )
 
   # return template
@@ -189,19 +253,59 @@ template_estuary_perch <- function(k = 30000, n = 0, ntime = 50, start = 1, end 
 #'
 #' @export
 #'
-args_estuary_perch <- function(n = 0, ntime = 50, start = 1, end = 1) {
+args_estuary_perch <- function(
+  n = c(0, 0, 0),
+  ntime = 50,
+  start = c(1, 1, 1),
+  end = c(1, 1, 1),
+  add = TRUE,
+  p_capture = 0.0
+) {
+
+  # expand n, start, end, add if required
+  if (length(n) == 1)
+    n <- rep(n, 3)
+  if (length(start) == 1)
+    start <- rep(start, 3)
+  if (length(end) == 1)
+    end <- rep(end, 3)
+  if (length(add) == 1)
+    add <- rep(add, 3)
+
+  # check for other lengths of n, start, or end
+  if (any(c(length(n), length(start), length(end)) != 3)) {
+    stop("n, start, and end must be vectors with 1 or 3 elements",
+         call. = FALSE)
+  }
 
   # helper to define removals process
-  define_translocation <- function(start, end, n) {
+  define_removals <- function(start, end, n, add = add) {
 
     # set up a sequence of iterations at which individuals are removed
-    if (length(n) == 1) {
-      x <- rep(0, ntime)
-      x[start:end] <- n
-      n <- x
+    if (!is.list(n)) {
+      n <- mapply(
+        zeros_and_fill,
+        n,
+        start,
+        end,
+        MoreArgs = list(len = ntime),
+        SIMPLIFY = FALSE
+      )
     } else {
-      if (length(n) != ntime) {
-        stop("if n is a vector it must have one value for each time step",
+      if (!all(sapply(n, length) == ntime)) {
+        stop("if n is a list, each element must be a vector ",
+             "with one value for each time step",
+             call. = FALSE)
+      }
+    }
+
+    # set up a sequence of add flags
+    if (!is.matrix(add)) {
+      add <- matrix(rep(add, ntime), nrow = 3)
+    } else {
+      if (nrow(add) != 3 | ncol(add) != ntime) {
+        stop("if add is a matrix, it must have three rows ",
+             "and ntime columns (ntime = ", ntime, ")",
              call. = FALSE)
       }
     }
@@ -211,7 +315,12 @@ args_estuary_perch <- function(n = 0, ntime = 50, start = 1, end = 1) {
 
       # return
       list(
-        n = n[iter], add = TRUE
+        n_yoy = n[[1]][iter],
+        n_twoplus = n[[2]][iter],
+        n_adult = n[[3]][iter],
+        add_yoy = add[1, iter],
+        add_twoplus = add[2, iter],
+        add_adult = add[3, iter]
       )
 
     }
@@ -221,15 +330,15 @@ args_estuary_perch <- function(n = 0, ntime = 50, start = 1, end = 1) {
 
   }
 
-
   # return named list of args
   list(
 
-    # to define additions through translocation
+    # to include additions or removals of individuals
     density_dependence_n = list(
-      define_translocation(
-        start = start, end = end, n = n
-      )
+      define_removals(
+        start = start, end = end, n = n, add = add
+      ),
+      p_capture = p_capture
     )
 
   )
