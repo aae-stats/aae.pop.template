@@ -139,8 +139,8 @@ template_estuary_perch <- function(k = 30000, n = 0, ntime = 50, start = 1, end 
   # define environmental stochasticity
   envstoch <- environmental_stochasticity(
     masks = list(
-      masks = combine(survival(popmat, dims = 2), transition(popmat, dims = 1)),
-      reproduction(popmat)
+      transition(popmat),
+      reproduction(popmat, dims = reproductive)
     ),
     funs = list(
       survival_gen,
