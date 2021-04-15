@@ -73,7 +73,7 @@ get_args <- function(sp, ...) {
 check_species_args <- function(x) {
 
   # currently implemented species
-  sp_list <- c("macquarie_perch", "murray_cod", "platypus")
+  sp_list <- c("macquarie_perch", "murray_cod", "platypus", "estuary_perch")
 
   # give x a fighting chance with fuzzy matching
   if (any(agrepl(x, sp_list)))
