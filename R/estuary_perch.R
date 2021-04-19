@@ -80,7 +80,9 @@ estuary_perch <- function(
     n = n,
     ntime = ntime,
     start = start,
-    end = end
+    end = end,
+    add = add,
+    p_capture = p_capture
   )
 }
 
