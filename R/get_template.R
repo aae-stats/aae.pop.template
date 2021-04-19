@@ -65,7 +65,13 @@ get_template <- function(sp, ...) {
 check_species_template <- function(x) {
 
   # currently implemented species
-  sp_list <- c("murray_cod", "macquarie_perch", "platypus", "estuary_perch")
+  sp_list <- c(
+    "murray_cod",
+    "macquarie_perch",
+    "platypus",
+    "estuary_perch",
+    "pygmy_perch"
+  )
 
   # give x a fighting chance with fuzzy matching
   if (any(agrepl(x, sp_list)))
