@@ -73,10 +73,10 @@ Use a pre-defined population dynamics object to
 }
 \details{
 The \code{estuary_perch} population model is a
-  stage-structured model with 2 classes and includes negative
+  stage-structured model with 40 classes and includes negative
   density dependence, environmental and demographic
-  stochasticity, and optional associations with hydrological
-  conditions, instream and riparian habitat, and predators.
+  stochasticity, and optional associations with environmental
+  covariates, including recreational angling.
 
   The estuary perch population template requires
   several additional arguments and allows several optional
