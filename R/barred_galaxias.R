@@ -250,16 +250,17 @@ template_barred_galaxias <- function(
   }
 
   # collate masks and functions into lists
-  funs <- list(
-    juvenile_survival_effects,
-    adult_survival_effects,
-    reproduction_effects
-  )
-
-  masks <- list(
-    combine(survival, transition)(popmat, dims = 1:2),
-    combine(survival, transition)(popmat, dims = reproductive),
-    reproduction(popmat, dims = reproductive)
+  covars <- covariates(
+    masks = list(
+      combine(survival, transition)(popmat, dims = 1:2),
+      combine(survival, transition)(popmat, dims = reproductive),
+      reproduction(popmat, dims = reproductive)
+    ),
+    funs = list(
+      juvenile_survival_effects,
+      adult_survival_effects,
+      reproduction_effects
+    )
   )
 
   # define environmental stochasticity
