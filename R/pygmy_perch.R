@@ -136,8 +136,8 @@ template_pygmy_perch <- function(
   fecundity_by_age <- exp(
     0.05068 * exp(0.1933 * reproductive + 3.4597) + 3.2043
   )
-  popmat[reproduction(popmat, dims = reproductive)] <-
-    prod(early_survival) * fecundity_by_age
+  # includes YOY, so not possible to use reproduction(popmat)
+  popmat[1, ] <- prod(early_survival) * fecundity_by_age
 
   # define custom density dependence function
   theta_ricker <- function(x, n, theta = 4, r = 0.4) {
