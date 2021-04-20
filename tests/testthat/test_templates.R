@@ -143,6 +143,37 @@ test_that("pygmy perch template returns correct dynamics object", {
 
 })
 
+test_that("barred galaxias template returns correct dynamics object", {
+
+  # simulate from a Macquarie perch object
+  dyn <- barred_galaxias()
+  sim <- simulate(dyn)
+  expect_equal(dim(sim), c(1L, 4L, 51L))
+
+  # expect most processes to be defined
+  expect_equal(
+    class(dyn$dynamics$density_dependence_n),
+    c("density_dependence_n", "function")
+  )
+  expect_equal(
+    class(dyn$dynamics$covariates),
+    c("covariates", "function")
+  )
+  expect_equal(
+    class(dyn$dynamics$density_dependence),
+    c("density_dependence", "function")
+  )
+  expect_equal(
+    class(dyn$dynamics$demographic_stochasticity),
+    c("demographic_stochasticity", "function")
+  )
+  expect_equal(
+    class(dyn$dynamics$environmental_stochasticity),
+    c("environmental_stochasticity", "function")
+  )
+
+})
+
 test_that("get_template returns correct template without species wrappers", {
 
   # check Murray cod template

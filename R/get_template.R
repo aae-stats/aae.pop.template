@@ -70,7 +70,8 @@ check_species_template <- function(x) {
     "macquarie_perch",
     "platypus",
     "estuary_perch",
-    "pygmy_perch"
+    "pygmy_perch",
+    "barred_galaxias"
   )
 
   # give x a fighting chance with fuzzy matching
