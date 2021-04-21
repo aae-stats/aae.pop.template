@@ -91,6 +91,9 @@ template_barred_galaxias <- function(
   add = TRUE
 ) {
 
+  # k is not being evaluated for some reason
+  force(k)
+
   # how many stages are we going to work with?
   nstage <- 4
 
@@ -156,7 +159,7 @@ template_barred_galaxias <- function(
     if (x$bushfire) {
       scale_factor <- 1 / (2 - x$riparian)
       if (x$ex_situ)
-        scale_factor <- scale_factor + 0.5 * (1 - scale_factor)
+        scale_factor <- scale_factor + 0.75 * (1 - scale_factor)
       mat <- scale_factor * mat
     }
 
@@ -164,7 +167,7 @@ template_barred_galaxias <- function(
     if (x$ctf) {
       scale_factor <- 1 / (5 - 3 * x$riparian)
       if (x$ex_situ)
-        scale_factor <- scale_factor + 0.5 * (1 - scale_factor)
+        scale_factor <- scale_factor + 0.75 * (1 - scale_factor)
       mat <- scale_factor * mat
     }
 
@@ -187,7 +190,7 @@ template_barred_galaxias <- function(
     if (x$bushfire) {
       scale_factor <- 3 / (4 - x$riparian)
       if (x$ex_situ)
-        scale_factor <- scale_factor + 0.5 * (1 - scale_factor)
+        scale_factor <- scale_factor + 0.75 * (1 - scale_factor)
       mat <- scale_factor * mat
     }
 
@@ -195,7 +198,7 @@ template_barred_galaxias <- function(
     if (x$ctf) {
       scale_factor <- 3 / (5 - 1.25 * x$riparian)
       if (x$ex_situ)
-        scale_factor <- scale_factor + 0.5 * (1 - scale_factor)
+        scale_factor <- scale_factor + 0.75 * (1 - scale_factor)
       mat <- scale_factor * mat
     }
 
