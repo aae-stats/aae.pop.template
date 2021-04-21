@@ -91,9 +91,6 @@ template_barred_galaxias <- function(
   add = TRUE
 ) {
 
-  # k is not being evaluated for some reason
-  force(k)
-
   # how many stages are we going to work with?
   nstage <- 4
 
