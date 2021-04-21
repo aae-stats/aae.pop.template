@@ -147,105 +147,98 @@ template_barred_galaxias <- function(
   )
 
   # define effects of covariates on juvenile survival (stages 1 and 2)
-  juvenile_survival_effects <- function(x, params) {
+  juvenile_survival_effects <- function(mat, x, ...) {
 
     # account for trout
-    x <- ifelse(params$trout, 0, x)
+    mat <- ifelse(x$trout, 0, mat)
 
     # account for bushfire
-    if (params$bushfire) {
-      scale_factor <- 1 / (2 - params$riparian)
-      x <- scale_factor * x
+    if (x$bushfire) {
+      scale_factor <- 1 / (2 - x$riparian)
+      if (x$ex_situ)
+        scale_factor <- scale_factor + 0.5 * (1 - scale_factor)
+      mat <- scale_factor * mat
     }
 
     # account for ctf
-    if (params$ctf) {
-      scale_factor <- 1 / (5 - 3 * params$riparian)
-      x <- scale_factor * x
+    if (x$ctf) {
+      scale_factor <- 1 / (5 - 3 * x$riparian)
+      if (x$ex_situ)
+        scale_factor <- scale_factor + 0.5 * (1 - scale_factor)
+      mat <- scale_factor * mat
     }
 
     # account for riparian
-    if (params$riparian) {
-      xnew <- 1.2 * x
-      xnew <- ifelse(xnew > 1, 1, xnew)
-      x <- xnew
+    if (x$riparian) {
+      mat_new <- 1.2 * mat
+      mat_new <- ifelse(mat_new > 1, 1, mat_new)
+      mat <- mat_new
     }
 
     # return
-    x
+    mat
 
   }
 
   # define effects of covariates on adult survival (stages 3 and 4)
-  adult_survival_effects <- function(x, params) {
+  adult_survival_effects <- function(mat, x, ...) {
 
     # account for trout
-    x <- ifelse(params$trout, 0.5 * x, x)
+    mat <- ifelse(x$trout, 0.5 * mat, mat)
 
     # account for bushfire
-    if (params$bushfire) {
-      scale_factor <- 3 / (4 - params$riparian)
-      x <- scale_factor * x
+    if (x$bushfire) {
+      scale_factor <- 3 / (4 - x$riparian)
+      if (x$ex_situ)
+        scale_factor <- scale_factor + 0.5 * (1 - scale_factor)
+      mat <- scale_factor * mat
     }
 
     # account for ctf
-    if (params$ctf) {
-      scale_factor <- 3 / (5 - 1.25 * params$riparian)
-      x <- scale_factor * x
-    }
-
-    # account for ex-situ
-    if (params$ex_situ) {
-      xnew <- 1.1 * x
-      xnew <- ifelse(xnew > 1, 1, xnew)
-      x <- xnew
-    }
-
-    # account for translocations
-    if (params$translocation) {
-      scale_factor <- 1 - 0.1 * params$npop
-      x <- scale_factor * x
+    if (x$ctf) {
+      scale_factor <- 3 / (5 - 1.25 * x$riparian)
+      if (x$ex_situ)
+        scale_factor <- scale_factor + 0.5 * (1 - scale_factor)
+      mat <- scale_factor * mat
     }
 
     # account for riparian
-    if (params$riparian) {
-      xnew <- 1.2 * x
-      xnew <- ifelse(xnew > 1, 1, xnew)
-      x <- xnew
+    if (x$riparian) {
+      mat_new <- 1.2 * mat
+      mat_new <- ifelse(mat_new > 1, 1, mat_new)
+      mat <- mat_new
     }
 
     # return
-    x
+    mat
 
   }
 
   # define effects of covariates on reproduction
-  reproduction_effects <- function(x, params) {
+  reproduction_effects <- function(mat, x, ...) {
 
     # account for trout
-    x <- ifelse(params$trout, 0, x)
+    mat <- ifelse(x$trout, 0, mat)
 
     # account for bushfire
-    if (params$bushfire) {
-      scale_factor <- 1 / (2 - params$riparian)
-      x <- scale_factor * x
+    if (x$bushfire) {
+      scale_factor <- 1 / (2 - x$riparian)
+      mat <- scale_factor * mat
     }
 
     # account for ctf
-    if (params$ctf) {
-      scale_factor <- 1 / (5 - 3 * params$riparian)
-      x <- scale_factor * x
+    if (x$ctf) {
+      scale_factor <- 1 / (5 - 3 * x$riparian)
+      mat <- scale_factor * mat
     }
 
     # account for riparian
-    if (params$riparian) {
-      xnew <- 1.2 * x
-      xnew <- ifelse(xnew > 1, 1, xnew)
-      x <- xnew
+    if (x$riparian) {
+      mat <- 1.2 * mat
     }
 
     # return
-    x
+    mat
 
   }
 
