@@ -99,11 +99,15 @@ template_barred_galaxias <- function(
 
   # define  a survival function
   survival_gen <- function(mat, ...) {
+
+    # make sure values are not exactly 0 or 1
+    eps <- 1e-4
+    mat[mat == 1] <- 1 - eps
+    mat[mat == 0] <- eps
+
+    # return
     plogis(
-      rnorm(
-        length(mat),
-        mean = qlogis(mat),
-        sd = 0.5 * abs(qlogis(mat)))
+      rnorm(length(mat), mean = qlogis(mat), sd = 0.5 * abs(qlogis(mat)))
     )
   }
 
