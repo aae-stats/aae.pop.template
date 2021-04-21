@@ -232,7 +232,7 @@ template_macquarie_perch <- function(
 
   # bottom-up effects of density on early survival
   #   through competition for resources
-  bh <- function (x, pop, theta = 0.2, ...) {
+  bh <- function(x, pop, theta = 0.2, ...) {
     x / (1 + theta * x * sum(pop[reproductive]) / k)
   }
 
@@ -529,8 +529,8 @@ plot_covariates <- function(mat, x, species, parameters) {
   pars <- list(
     spawning_param = c(-0.01, -0.05),  # recruit effects
     variability_param = -0.003,        # recruit effects
-    recruit_param = -0.5,              # recruit effects, defaults depend on lake/river
-    shift = 10,                        # recruit effects, defaults depend on lake/river
+    recruit_param = -0.5,              # recruit effects
+    shift = 10,                        # recruit effects
     survival_param = c(0.2, -0.2)      # survival effects, in river only
   )
 
