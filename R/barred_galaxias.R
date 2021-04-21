@@ -169,11 +169,8 @@ template_barred_galaxias <- function(
     }
 
     # account for riparian
-    if (x$riparian) {
-      mat_new <- 1.2 * mat
-      mat_new <- ifelse(mat_new > 1, 1, mat_new)
-      mat <- mat_new
-    }
+    mat <- x$riparian * mat
+    mat <- ifelse(mat > 1, 1, mat)
 
     # return
     mat
@@ -203,11 +200,8 @@ template_barred_galaxias <- function(
     }
 
     # account for riparian
-    if (x$riparian) {
-      mat_new <- 1.2 * mat
-      mat_new <- ifelse(mat_new > 1, 1, mat_new)
-      mat <- mat_new
-    }
+    mat <- x$riparian * mat
+    mat <- ifelse(mat > 1, 1, mat)
 
     # return
     mat
@@ -233,9 +227,7 @@ template_barred_galaxias <- function(
     }
 
     # account for riparian
-    if (x$riparian) {
-      mat <- 1.2 * mat
-    }
+    mat <- x$riparian * mat
 
     # return
     mat
