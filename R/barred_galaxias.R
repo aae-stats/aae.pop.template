@@ -159,16 +159,12 @@ template_barred_galaxias <- function(
     # account for bushfire
     if (x$bushfire) {
       scale_factor <- 1 / (2 - x$riparian)
-      if (x$ex_situ)
-        scale_factor <- scale_factor + 0.75 * (1 - scale_factor)
       mat <- scale_factor * mat
     }
 
     # account for ctf
     if (x$ctf) {
       scale_factor <- 1 / (5 - 3 * x$riparian)
-      if (x$ex_situ)
-        scale_factor <- scale_factor + 0.75 * (1 - scale_factor)
       mat <- scale_factor * mat
     }
 
@@ -190,16 +186,12 @@ template_barred_galaxias <- function(
     # account for bushfire
     if (x$bushfire) {
       scale_factor <- 3 / (4 - x$riparian)
-      if (x$ex_situ)
-        scale_factor <- scale_factor + 0.75 * (1 - scale_factor)
       mat <- scale_factor * mat
     }
 
     # account for ctf
     if (x$ctf) {
       scale_factor <- 3 / (5 - 1.25 * x$riparian)
-      if (x$ex_situ)
-        scale_factor <- scale_factor + 0.75 * (1 - scale_factor)
       mat <- scale_factor * mat
     }
 
