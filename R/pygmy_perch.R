@@ -167,6 +167,12 @@ template_pygmy_perch <- function(
     ...
   ) {
 
+    # account for predators
+    mat <- ifelse(x$predators, 0.9 * x$habitat * mat, mat)
+
+    # account for persistent water availability
+    mat <- ifelse(x$dry, 0.2 * mat, mat)
+
     # return directly scaled value because x is calculated
     #   as a probability
     mat * x

@@ -154,7 +154,7 @@ template_barred_galaxias <- function(
   juvenile_survival_effects <- function(mat, x, ...) {
 
     # account for trout
-    mat <- ifelse(x$trout, 0, mat)
+    mat <- ifelse(x$trout, 0.7 * mat, mat)
 
     # account for bushfire
     if (x$bushfire) {
@@ -181,7 +181,7 @@ template_barred_galaxias <- function(
   adult_survival_effects <- function(mat, x, ...) {
 
     # account for trout
-    mat <- ifelse(x$trout, 0.5 * mat, mat)
+    mat <- ifelse(x$trout, 0, mat)
 
     # account for bushfire
     if (x$bushfire) {
@@ -206,9 +206,6 @@ template_barred_galaxias <- function(
 
   # define effects of covariates on reproduction
   reproduction_effects <- function(mat, x, ...) {
-
-    # account for trout
-    mat <- ifelse(x$trout, 0, mat)
 
     # account for bushfire
     if (x$bushfire) {
