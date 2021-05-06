@@ -177,7 +177,7 @@ template_pygmy_perch <- function(
 
     # return directly scaled value because x is calculated
     #   as a probability
-    mat * x
+    mat
 
   }
 
