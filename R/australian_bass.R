@@ -132,13 +132,16 @@ template_australian_bass <- function(
   # define base matrix
   popmat <- matrix(0, nrow = nstage, ncol = nstage)
 
-  # surivval of egg, larvae and 0+ fish
+  # survival of egg, larvae and 0+ fish
   early_survival <- c(0.5, 0.0061, 0.1226)
 
   # add survival
   age_frequency <- (1020.23 * (seq_len(nstage) ^ -1.16)) - 13.5
   popmat[transition(popmat)] <-
     age_frequency[-1] / age_frequency[-length(age_frequency)]
+
+  # tweak new stages that give wacky survival estimates
+  popmat[transition(popmat)][41:49] <- (1 - seq(0.1, 0.9, length = 9)) * popmat[transition(popmat)][40]
 
   # add reproduction
   fecundity_by_age <- exp(
