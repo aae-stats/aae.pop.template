@@ -79,7 +79,8 @@ check_species_args <- function(x) {
     "platypus",
     "estuary_perch",
     "pygmy_perch",
-    "barred_galaxias"
+    "barred_galaxias",
+    "australian_bass"
   )
 
   # give x a fighting chance with fuzzy matching
