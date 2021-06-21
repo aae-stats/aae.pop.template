@@ -165,12 +165,22 @@ template_australian_bass <- function(
   fecundity_effects <- function(
     mat,
     x,
+    alpha = 0.5,
+    beta = 0,
+    gamma = -0.01,
+    offset = 14,
+    delta = 3
     ...
   ) {
 
-    # return directly scaled value because x is calculated
-    #   as a probability
-    mat * x
+    # include effects of water temperature
+    scaling <- alpha +
+      delta * (beta * (x$water_temperature - offset) +
+                 gamma * (x$water_temperature - offset) ^ 2)
+
+    # return rescaled fecundity with an additional term
+    #   for discharge effects (calculated externally)
+    mat * x$discharge * scaling
 
   }
 
