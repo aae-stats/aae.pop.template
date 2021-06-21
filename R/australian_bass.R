@@ -169,7 +169,7 @@ template_australian_bass <- function(
     beta = 0,
     gamma = -0.01,
     offset = 14,
-    delta = 3
+    delta = 3,
     ...
   ) {
 
