@@ -181,6 +181,9 @@ template_australian_bass <- function(
       delta * (beta * (x$water_temperature - offset) +
                  gamma * (x$water_temperature - offset) ^ 2)
 
+    # catch negative scaling values
+    scaling[scaling < 0] <- 0
+
     # return rescaled fecundity with an additional term
     #   for discharge effects (calculated externally)
     mat * x$discharge * scaling
