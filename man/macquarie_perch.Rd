@@ -18,7 +18,8 @@ macquarie_perch(
   allee_strength = 1,
   contributing_min = 0.75,
   contributing_max = 1,
-  recruit_failure = 0
+  recruit_failure = 0,
+  p_capture = 0
 )
 
 args_macquarie_perch(
@@ -30,7 +31,8 @@ args_macquarie_perch(
   allee_strength = 1,
   contributing_min = 0.75,
   contributing_max = 1,
-  recruit_failure = 0
+  recruit_failure = 0,
+  p_capture = 0
 )
 }
 \arguments{
@@ -103,6 +105,10 @@ Defaults to \code{1.0}}
 
 \item{recruit_failure}{probability of complete recruitment
 failure at any given time step. Defaults to \code{0}}
+
+\item{p_capture}{probability of capture by recreational anglers,
+defaults to 0, in which case recreational fishing does not
+occur}
 }
 \description{
 Use a pre-defined population dynamics object to

@@ -71,6 +71,9 @@ NULL
 #'   Defaults to \code{1.0}
 #' @param recruit_failure probability of complete recruitment
 #'   failure at any given time step. Defaults to \code{0}
+#' @param p_capture probability of capture by recreational anglers,
+#'   defaults to 0, in which case recreational fishing does not
+#'   occur
 #'
 #' @details The \code{macquarie_perch} population model is an
 #'   age-structured model with 30 age classes and includes negative
@@ -113,7 +116,8 @@ macquarie_perch <- function(
   allee_strength = 1,
   contributing_min = 0.75,
   contributing_max = 1.0,
-  recruit_failure = 0
+  recruit_failure = 0,
+  p_capture = 0.0
 ) {
   get_template(
     sp = "macquarie_perch",
@@ -129,7 +133,8 @@ macquarie_perch <- function(
     allee_strength = allee_strength,
     contributing_min = contributing_min,
     contributing_max = contributing_max,
-    recruit_failure = recruit_failure
+    recruit_failure = recruit_failure,
+    p_capture = p_capture
   )
 }
 
@@ -147,7 +152,8 @@ template_macquarie_perch <- function(
   allee_strength = 1,
   contributing_min = 0.75,
   contributing_max = 1.0,
-  recruit_failure = 0
+  recruit_failure = 0,
+  p_capture = 0.0
 ) {
 
   # set default system
@@ -258,12 +264,49 @@ template_macquarie_perch <- function(
     funs = list(survival_gen, reproduction_gen)
   )
 
-  # use density_dependence_n to include stocking or
-  #   translocations (removals)
+  # define angling effects
+  go_fishing <- function(
+    n, p_capture, ...
+  ) {
+
+    # only needed if p_capture > 0
+    if (p_capture > 0) {
+
+      # flatten ages
+      age_vector <- rep(seq_along(n), times = n)
+
+      # which individuals are within the slot?
+      catchable <- age_vector >= 3
+
+      # binary switch to determine which ones get caught
+      caught <- rbinom(n = sum(catchable), size = 1, prob = p_capture)
+
+      # which ages were caught?
+      caught <- age_vector[caught == 1]
+
+      # remove caught individuals from relevant age classes,
+      #   checking to make sure at least one individual was
+      #   caught
+      if (length(caught) > 0) {
+        to_remove <- table(caught)
+        idx <- as.numeric(names(to_remove))
+        n[idx] <- n[idx] - to_remove
+      }
+
+    }
+
+    # return
+    n
+
+  }
+
+  # use density_dependence_n to include stocking,
+  #   translocations, or angling
   dd_n_masks <- list(
     all_classes(popmat, dim = 1),
     all_classes(popmat, dim = 2),
-    all_classes(popmat, dim = reproductive)
+    all_classes(popmat, dim = reproductive),
+    all_classes(popmat)
   )
   dd_n_fns <- list(
     function(pop, n_yoy, add_yoy, ...)
@@ -271,7 +314,8 @@ template_macquarie_perch <- function(
     function(pop, n_twoplus, add_twoplus, ...)
       add_remove(pop = pop, n = n_twoplus, add = add_twoplus),
     function(pop, n_adult, add_adult, ...)
-      add_remove(pop = pop, n = n_adult, add = add_adult)
+      add_remove(pop = pop, n = n_adult, add = add_adult),
+    go_fishing
   )
   dens_depend_n <- density_dependence_n(
     masks = dd_n_masks,
@@ -392,7 +436,8 @@ template_macquarie_perch <- function(
     allee_strength = allee_strength,
     contributing_min = contributing_min,
     contributing_max = contributing_max,
-    recruit_failure = recruit_failure
+    recruit_failure = recruit_failure,
+    p_capture = p_capture
   )
 
   # return
@@ -425,7 +470,8 @@ args_macquarie_perch <- function(
   allee_strength = 1,
   contributing_min = 0.75,
   contributing_max = 1.0,
-  recruit_failure = 0
+  recruit_failure = 0,
+  p_capture = 0
 ) {
 
   # expand n, start, end, add if required
@@ -514,7 +560,8 @@ args_macquarie_perch <- function(
     density_dependence_n = list(
       define_removals(
         start = start, end = end, n = n, add = add
-      )
+      ),
+      p_capture = p_capture
     )
 
   )

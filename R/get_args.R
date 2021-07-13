@@ -52,7 +52,7 @@ get_args <- function(sp, ...) {
   # check if species has arguments available
   available <- exists(
     paste0("args_", sp),
-    envir = getNamespace("aae.pop"),
+    envir = getNamespace("aae.pop.templates"),
     mode = "function"
   )
 

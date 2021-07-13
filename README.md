@@ -1,6 +1,6 @@
 ## aae.pop.templates: template population dynamics models
 
-aae.pop.templates is a package of template population dynamics models to use with the [aae.pop package](https://aae-stats.github.io/aae.pop/).
+aae.pop.templates is a package of template population dynamics models to use with the [aae.pop package](https://aae-stats.github.io/aae.pop/). Currently implemented models focus primarily on freshwater fish species, with all current models developed by researchers the Arthur Rylah Institute for Environmental Research.
 
 The [aae.pop website](https://aae-stats.github.io/aae.pop) includes examples of these population dynamics models in action.
 
