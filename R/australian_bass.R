@@ -249,7 +249,7 @@ template_australian_bass <- function(
   # use density_dependence_n to include stocking, translocations,
   #   and fishing
   dd_n_masks <- list(
-    all_classes(popmat, dim = 1),
+    all_classes(popmat),
     all_classes(popmat, dim = 2),
     all_classes(popmat, dim = 3),
     all_classes(popmat, dim = reproductive),
@@ -258,7 +258,8 @@ template_australian_bass <- function(
   dd_n_fns <- list(
     function(pop, n_yoy, add_yoy, ...) {
       n_yoy <- floor(theta_ricker(n_yoy, pop))
-      add_remove(pop = pop, n = n_yoy, add = add_yoy)
+      pop[1] <- add_remove(pop = pop[1], n = n_yoy, add = add_yoy)
+      pop
     },
     function(pop, n_twoplus, add_twoplus, ...)
       add_remove(pop = pop, n = n_twoplus, add = add_twoplus),
