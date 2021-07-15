@@ -256,8 +256,10 @@ template_australian_bass <- function(
     all_classes(popmat)
   )
   dd_n_fns <- list(
-    function(pop, n_yoy, add_yoy, ...)
-      add_remove(pop = pop, n = n_yoy, add = add_yoy),
+    function(pop, n_yoy, add_yoy, ...) {
+      n_yoy <- floor(theta_ricker(n_yoy, pop))
+      add_remove(pop = pop, n = n_yoy, add = add_yoy)
+    },
     function(pop, n_twoplus, add_twoplus, ...)
       add_remove(pop = pop, n = n_twoplus, add = add_twoplus),
     function(pop, n_threeplus, add_threeplus, ...)
