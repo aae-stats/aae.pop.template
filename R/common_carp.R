@@ -111,8 +111,6 @@ template_common_carp <- function(
   nstage <- 28
 
   # check system
-  # nolint start
-
   system <- tolower(system)
   if (
     !system %in% c("main_channel",
