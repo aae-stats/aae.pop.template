@@ -338,7 +338,7 @@ args_estuary_perch <- function(
     if (!is.matrix(add)) {
       add <- matrix(rep(add, ntime), nrow = 3)
     } else {
-      if (nrow(add) != 3 | ncol(add) != ntime) {
+      if (nrow(add) != 3 || ncol(add) != ntime) {
         stop("if add is a matrix, it must have three rows ",
              "and ntime columns (ntime = ", ntime, ")",
              call. = FALSE)
