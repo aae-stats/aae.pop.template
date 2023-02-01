@@ -1,4 +1,4 @@
-context("templates")
+context("args")
 
 test_that("macquarie perch arguments can be changed correctly", {
 

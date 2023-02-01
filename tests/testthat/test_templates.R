@@ -174,6 +174,62 @@ test_that("barred galaxias template returns correct dynamics object", {
 
 })
 
+test_that("australian bass template returns correct dynamics object", {
+
+  # simulate from a Murray cod object
+  dyn <- australian_bass()
+  sim <- simulate(dyn)
+  expect_equal(dim(sim), c(1L, 50L, 51L))
+
+  # expect most processes to be defined
+  expect_equal(
+    class(dyn$dynamics$density_dependence_n),
+    c("density_dependence_n", "function")
+  )
+  expect_equal(
+    class(dyn$dynamics$covariates),
+    c("covariates", "function")
+  )
+  expect_equal(
+    class(dyn$dynamics$density_dependence),
+    c("density_dependence", "function")
+  )
+  expect_null(dyn$dynamics$demographic_stochasticity)
+  expect_equal(
+    class(dyn$dynamics$environmental_stochasticity),
+    c("environmental_stochasticity", "function")
+  )
+
+})
+
+test_that("common carp template returns correct dynamics object", {
+
+  # simulate from a Murray cod object
+  dyn <- common_carp()
+  sim <- simulate(dyn)
+  expect_equal(dim(sim), c(1L, 28L, 51L))
+
+  # expect most processes to be defined
+  expect_equal(
+    class(dyn$dynamics$density_dependence_n),
+    c("density_dependence_n", "function")
+  )
+  expect_equal(
+    class(dyn$dynamics$covariates),
+    c("covariates", "function")
+  )
+  expect_equal(
+    class(dyn$dynamics$density_dependence),
+    c("density_dependence", "function")
+  )
+  expect_null(dyn$dynamics$demographic_stochasticity)
+  expect_equal(
+    class(dyn$dynamics$environmental_stochasticity),
+    c("environmental_stochasticity", "function")
+  )
+
+})
+
 test_that("get_template returns correct template without species wrappers", {
 
   # check Murray cod template
