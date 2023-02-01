@@ -8,7 +8,8 @@ NULL
 
 #' @rdname platypus
 #'
-#' @importFrom stats rnorm
+#' @importFrom stats rnorm rpois plogis qlogis
+#' @import aae.pop
 #'
 #' @export
 #'

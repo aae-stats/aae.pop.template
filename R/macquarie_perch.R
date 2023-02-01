@@ -9,8 +9,9 @@ NULL
 
 #' @rdname macquarie_perch
 #'
-#' @importFrom stats pnorm rnorm runif
+#' @importFrom stats pnorm rnorm runif rbinom qlogis plogis
 #' @importFrom Rdpack reprompt
+#' @import aae.pop
 #'
 #' @export
 #'
@@ -226,31 +227,21 @@ template_macquarie_perch <- function(
   # define population matrix
   nclass <- length(survival_mean) + 1
   popmat <- matrix(0, nrow = nclass, ncol = nclass)
-  popmat[transition(popmat)] <- survival_mean
-  popmat[reproduction(popmat, dims = reproductive)] <- reproduction_mean
+  popmat[aae.pop::transition(popmat)] <- survival_mean
+  popmat[aae.pop::reproduction(popmat, dims = reproductive)] <- reproduction_mean
 
   # define density dependence, only affects adult survival
   #   and reproductive stages
   density_masks <- list(
-    reproduction(popmat, dims = reproductive),
-    reproduction(popmat, dims = reproductive)
+    aae.pop::reproduction(popmat, dims = reproductive),
+    aae.pop::reproduction(popmat, dims = reproductive)
   )
-  # density_masks <- list(
-  #   transition(popmat),
-  #   reproduction(popmat, dims = reproductive)
-  # )
 
   # bottom-up effects of density on early survival
   #   through competition for resources
   bh <- function(x, pop, theta = 0.2, ...) {
     x / (1 + theta * x * sum(pop[reproductive]) / k)
   }
-
-  # define basic biomass-based density dependence
-  # biomass_dd <- function(x, pop, ...) {
-  #   sum_n <- sum(pop[reproductive])
-  #   x * ifelse(sum_n > k, k / sum_n, 1)
-  # }
 
   # positive density dependence (Allee effect)
   allee_fn <- function(mat, pop, allee_strength = 1, allee_factor = 10, ...) {
@@ -260,20 +251,16 @@ template_macquarie_perch <- function(
   }
 
   # and collate masks and functions in a single object
-  dens_depend <- density_dependence(
+  dens_depend <- aae.pop::density_dependence(
     masks = density_masks,
     funs = list(bh, allee_fn)
   )
-  # dens_depend <- density_dependence(
-  #   masks = density_masks,
-  #   funs = list(biomass_dd, allee_fn)
-  # )
 
   # define environmental stochasticity
-  envstoch <- environmental_stochasticity(
+  envstoch <- aae.pop::environmental_stochasticity(
     masks = list(
-      transition(popmat),
-      reproduction(popmat, dims = reproductive)
+      aae.pop::transition(popmat),
+      aae.pop::reproduction(popmat, dims = reproductive)
     ),
     funs = list(survival_gen, reproduction_gen)
   )
@@ -317,10 +304,10 @@ template_macquarie_perch <- function(
   # use density_dependence_n to include stocking,
   #   translocations, or angling
   dd_n_masks <- list(
-    all_classes(popmat, dim = 1),
-    all_classes(popmat, dim = 2),
-    all_classes(popmat, dim = reproductive),
-    all_classes(popmat)
+    aae.pop::all_classes(popmat, dim = 1),
+    aae.pop::all_classes(popmat, dim = 2),
+    aae.pop::all_classes(popmat, dim = reproductive),
+    aae.pop::all_classes(popmat)
   )
   dd_n_fns <- list(
     function(pop, n_yoy, add_yoy, ...)
@@ -331,7 +318,7 @@ template_macquarie_perch <- function(
       add_remove(pop = pop, n = n_adult, add = add_adult),
     go_fishing
   )
-  dens_depend_n <- density_dependence_n(
+  dens_depend_n <- aae.pop::density_dependence_n(
     masks = dd_n_masks,
     funs = dd_n_fns
   )
@@ -376,7 +363,7 @@ template_macquarie_perch <- function(
   survival_effects <- NULL
 
   # define covariate masks in all systems
-  recruit_masks <- list(reproduction(popmat))
+  recruit_masks <- list(aae.pop::reproduction(popmat))
   survival_masks <- NULL
 
   # add system-specific covariate effects
@@ -391,7 +378,7 @@ template_macquarie_perch <- function(
 
     # update effects and masks
     recruit_effects <- c(recruit_effects, list(recruit_effects_lake))
-    recruit_masks <- c(recruit_masks, list(reproduction(popmat)))
+    recruit_masks <- c(recruit_masks, list(aae.pop::reproduction(popmat)))
 
   }
   if (system == "river") {
@@ -435,16 +422,16 @@ template_macquarie_perch <- function(
 
     # update effects and masks
     recruit_effects <- c(recruit_effects, list(recruit_effects_river))
-    recruit_masks <- c(recruit_masks, list(reproduction(popmat)))
+    recruit_masks <- c(recruit_masks, list(aae.pop::reproduction(popmat)))
     survival_effects <- c(survival_effects, list(survival_effects_river))
     survival_masks <- c(
-      survival_masks, list(transition(popmat, dims = 2:30))
+      survival_masks, list(aae.pop::transition(popmat, dims = 2:30))
     )
 
   }
 
   # compile covariates process
-  covars <- covariates(
+  covars <- aae.pop::covariates(
     masks = c(recruit_masks, survival_masks),
     funs = c(recruit_effects, survival_effects)
   )
@@ -645,7 +632,7 @@ plot_covariates <- function(mat, x, species, parameters) {
   survival_effects <- NULL
 
   # define covariate masks in all systems
-  recruit_masks <- list(reproduction(popmat))
+  recruit_masks <- list(aae.pop::reproduction(popmat))
   survival_masks <- NULL
 
   # add system-specific covariate effects
@@ -660,7 +647,7 @@ plot_covariates <- function(mat, x, species, parameters) {
 
     # update effects and masks
     recruit_effects <- c(recruit_effects, list(recruit_effects_lake))
-    recruit_masks <- c(recruit_masks, list(reproduction(popmat)))
+    recruit_masks <- c(recruit_masks, list(aae.pop::reproduction(popmat)))
 
   }
   if (system == "river") {
@@ -694,10 +681,10 @@ plot_covariates <- function(mat, x, species, parameters) {
 
     # update effects and masks
     recruit_effects <- c(recruit_effects, list(recruit_effects_river))
-    recruit_masks <- c(recruit_masks, list(reproduction(popmat)))
+    recruit_masks <- c(recruit_masks, list(aae.pop::reproduction(mat)))
     survival_effects <- c(survival_effects, list(survival_effects_river))
     survival_masks <- c(
-      survival_masks, list(transition(popmat, dims = 2:30))
+      survival_masks, list(aae.pop::transition(mat, dims = 2:30))
     )
 
   }

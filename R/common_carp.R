@@ -8,7 +8,8 @@ NULL
 
 #' @rdname common_carp
 #'
-#' @importFrom stats rnorm
+#' @importFrom stats rnorm qlogis plogis
+#' @import aae.pop
 #'
 #' @export
 #'
@@ -111,9 +112,6 @@ template_common_carp <- function(
 
   # check system
   # nolint start
-  #' @param system one of \code{"main_channel"}, \code{"river_wetland"},
-  #'   \code{"ephemeral_wetland"}, \code{"permanent_wetland"},
-  #'   or \code{"floodplain"}, defining the early life survival.
 
   system <- tolower(system)
   if (

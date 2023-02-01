@@ -8,7 +8,8 @@ NULL
 
 #' @rdname pygmy_perch
 #'
-#' @importFrom stats rnorm
+#' @importFrom stats rnorm rpois
+#' @import aae.pop
 #'
 #' @export
 #'

@@ -14,6 +14,8 @@ is.template(x)
 partially matched to included species}
 
 \item{\dots}{additional arguments passed to the species template}
+
+\item{x}{a template created with \code{get_template}}
 }
 \description{
 Function to compile population dynamics objects from

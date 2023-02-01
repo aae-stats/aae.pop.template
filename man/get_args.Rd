@@ -7,6 +7,12 @@
 \usage{
 get_args(sp, ...)
 }
+\arguments{
+\item{sp}{character naming the species to be collected. Will be
+partially matched to included species}
+
+\item{\dots}{additional arguments passed to the species template}
+}
 \description{
 Define additional arguments used to control the
   simulation of population dynamics in \code{\link[aae.pop]{simulate}}.

@@ -8,7 +8,8 @@ NULL
 
 #' @rdname estuary_perch
 #'
-#' @importFrom stats rnorm
+#' @importFrom stats rnorm rpois rbinom qlogis plogis
+#' @import aae.pop
 #'
 #' @export
 #'

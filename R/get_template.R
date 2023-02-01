@@ -5,11 +5,14 @@
 #' @description Function to compile population dynamics objects from
 #'   a provided template
 #'
+#' @export
+#'
+#' @importFrom aae.pop dynamics
+#'
 #' @param sp character naming the species to be collected. Will be
 #'   partially matched to included species
+#' @param x a template created with \code{get_template}
 #' @param \dots additional arguments passed to the species template
-#'
-#' @export
 #'
 #' @details In most cases, \code{get_template} will not be required
 #'   because species templates are defined with wrappers
@@ -50,7 +53,7 @@ get_template <- function(sp, ...) {
 
   # collate dynamics and arguments objects
   template <- list(
-    dynamics = do.call(dynamics, template$dynamics),
+    dynamics = do.call(aae.pop::dynamics, template$dynamics),
     arguments = template$arguments,
     species = format_species_name(sp)
   )

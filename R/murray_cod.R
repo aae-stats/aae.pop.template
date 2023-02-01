@@ -9,7 +9,8 @@ NULL
 
 #' @rdname murray_cod
 #'
-#' @importFrom stats rnorm
+#' @importFrom stats rnorm rbinom rbeta qlogis plogis
+#' @import aae.pop
 #'
 #' @export
 #'

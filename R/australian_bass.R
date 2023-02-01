@@ -8,7 +8,8 @@ NULL
 
 #' @rdname australian_bass
 #'
-#' @importFrom stats rnorm
+#' @importFrom stats rnorm rpois plogis qlogis
+#' @import aae.pop
 #'
 #' @export
 #'
@@ -137,26 +138,26 @@ template_australian_bass <- function(
 
   # add survival
   age_frequency <- (1020.23 * (seq_len(nstage) ^ -1.16)) - 13.5
-  popmat[transition(popmat)] <-
+  popmat[aae.pop::transition(popmat)] <-
     age_frequency[-1] / age_frequency[-length(age_frequency)]
 
   # tweak new stages that give wacky survival estimates
-  popmat[transition(popmat)][41:49] <- (1 - seq(0.1, 0.9, length = 9)) * popmat[transition(popmat)][40]
+  popmat[aae.pop::transition(popmat)][41:49] <- (1 - seq(0.1, 0.9, length = 9)) * popmat[aae.pop::transition(popmat)][40]
 
   # add reproduction
   fecundity_by_age <- exp(
     -11.83 +
       4.21 * log(384.69 * (1 - exp(-0.19 * (reproductive + 2.27))))
   )
-  popmat[reproduction(popmat, dims = reproductive)] <-
+  popmat[aae.pop::reproduction(popmat, dims = reproductive)] <-
     prod(early_survival) * fecundity_by_age
 
   # define custom density dependence function
   theta_ricker <- function(x, n, theta = 4, r = 0.4) {
     x * exp(r * (1 - (sum(n[reproductive]) / k) ^ theta)) / exp(r)
   }
-  dens_depend <- density_dependence(
-    reproduction(popmat),
+  dens_depend <- aae.pop::density_dependence(
+    aae.pop::reproduction(popmat),
     theta_ricker
   )
 
@@ -191,16 +192,16 @@ template_australian_bass <- function(
   }
 
   # combine into a covariates object
-  covars <- covariates(
-    masks = reproduction(popmat, dims = reproductive),
+  covars <- aae.pop::covariates(
+    masks = aae.pop::reproduction(popmat, dims = reproductive),
     funs = fecundity_effects
   )
 
   # define environmental stochasticity
-  envstoch <- environmental_stochasticity(
+  envstoch <- aae.pop::environmental_stochasticity(
     masks = list(
-      transition(popmat),
-      reproduction(popmat, dims = reproductive)
+      aae.pop::transition(popmat),
+      aae.pop::reproduction(popmat, dims = reproductive)
     ),
     funs = list(
       survival_gen,
@@ -269,7 +270,7 @@ template_australian_bass <- function(
       add_remove(pop = pop, n = n_adult, add = add_adult),
     go_fishing
   )
-  dens_depend_n <- density_dependence_n(
+  dens_depend_n <- aae.pop::density_dependence_n(
     masks = dd_n_masks,
     funs = dd_n_fns
   )

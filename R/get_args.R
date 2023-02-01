@@ -8,6 +8,10 @@
 #'
 #' @export
 #'
+#' @param sp character naming the species to be collected. Will be
+#'   partially matched to included species
+#' @param \dots additional arguments passed to the species template
+#'
 #' @details The \code{get_args} function can be used to access
 #'   previously defined arguments to be passed to
 #'   \code{\link[aae.pop]{simulate}} for any given species.

@@ -8,7 +8,8 @@ NULL
 
 #' @rdname barred_galaxias
 #'
-#' @importFrom stats rnorm
+#' @importFrom stats rnorm rpois
+#' @import aae.pop
 #'
 #' @export
 #'
