@@ -7,7 +7,7 @@
 \usage{
 murray_cod(
   k = 20000,
-  system = "murray",
+  system = "murray_river",
   reproductive = 5:50,
   n = c(0, 0, 0),
   ntime = 50,

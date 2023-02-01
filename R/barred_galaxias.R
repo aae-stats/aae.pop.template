@@ -120,7 +120,7 @@ template_barred_galaxias <- function(
   ) {
 
     # simulate realised fecundity in a given year
-    n_offspring <- rpois(1, lambda = mat)
+    n_offspring <- rpois(length(mat), lambda = mat)
 
     # estimate and return reproduction estimates
     n_offspring * proportion_female * proportion_breeding

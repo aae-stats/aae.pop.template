@@ -16,11 +16,13 @@ NULL
 #' @param k carrying capacity
 #' @param reproductive integer vector defining the adult stages in the
 #'   Murray cod population. Defaults to \code{5:50}
-#' @param system one of \code{"murray"}, \code{"largetrib"}, or
-#'   \code{"smalltrib"}, defining whether the maximum size of
+#' @param system one of \code{"murray_river"}, \code{"goulburn_river"},
+#'   \code{"campaspe_river"}, \code{"ovens_river"}, \code{"broken_river"}
+#'   or \code{"broken_creek"}, defining whether the maximum size of
 #'   individuals matches observations in the Murray River (1300 mm),
 #'   large tributaries (e.g., Goulburn River, Campaspe River; 1100 mm),
-#'   or small tributaries (e.g., XYZ; 900 mm). Defaults to "murray"
+#'   or small tributaries (e.g., XYZ; 900 mm). Defaults to "murray" and
+#'   ignores case
 #' @param n an integer, vector of integers, or list specifying the
 #'   number of young-of-year, 2+, and adult fish to add or
 #'   remove in any given year. If a single integer is provided,
@@ -85,7 +87,7 @@ NULL
 #' plot(sims)
 murray_cod <- function(
   k = 20000,
-  system = "murray",
+  system = "murray_river",
   reproductive = 5:50,
   n = c(0, 0, 0),
   ntime = 50,
@@ -113,7 +115,7 @@ murray_cod <- function(
 # internal function: define species defaults
 template_murray_cod <- function(
   k = 20000,
-  system = "murray",
+  system = "murray_river",
   reproductive = 5:50,
   n = c(0, 0, 0),
   ntime = 50,
@@ -129,12 +131,29 @@ template_murray_cod <- function(
 
   # check system
   # nolint start
-  if (!system %in% c("murray", "goulburn", "campaspe")) {
-    stop('system must be set as "murray", "goulburn", or "campaspe" ',
+  system <- tolower(system)
+  if (
+    !system %in% c("murray_river", "goulburn_river", "campaspe_river",
+                   "ovens_river", "broken_river", "broken_creek")
+  ) {
+    stop('system must be one of "murray_river"',
+         '"goulburn_river", "campaspe_river", "ovens_river"',
+         '"broken_river", or "broken_creek" ',
          'in a call to murray_cod',
          call. = FALSE)
   }
-  sys_switch <- ifelse(system == "murray", "murray", "largetrib")
+
+  # set as small or large trib
+  sys_set <- switch(
+    system,
+    "murray_river" = "murray",
+    "goulburn_river" = "largetrib",
+    "campaspe_river" = "largetrib",
+    "ovens_river" = "largetrib",
+    "broken_river" = "largetrib",
+    "broken_creek" = "largetrib",
+    "murray"
+  )
 
   # set system-specific max lengths
   max_length_options <- c(
@@ -142,7 +161,7 @@ template_murray_cod <- function(
     "largetrib" = 1100,
     "smalltrib" = 900
   )
-  max_length <- max_length_options[sys_switch]
+  max_length <- max_length_options[sys_set]
 
   # force evaluation of max length
   force(max_length)
@@ -182,7 +201,6 @@ template_murray_cod <- function(
   #   arguments with the same name in simulate
   reproduction_gen <- function(
     mat,
-    early_surv = c(0.5, 0.013, 0.13),
     ...
   ) {
 
@@ -193,6 +211,8 @@ template_murray_cod <- function(
     reprod[reprod < 0] <- 0
 
     # multiply by 0.5 to account for a 50:50 sex ratio
+    #   (don't need product of early survival because
+    #    it's already accounted for in pop mat
     0.5 * reprod
 
   }
@@ -246,22 +266,45 @@ template_murray_cod <- function(
 
   # covariate effects based on standardised discharge metrics
   #   - associations estimated and described in Tonkin et al. 2020 (STOTEN)
-  recruitment_effects <- function(mat, x, system = "murray", threshold = 0, ...) {
+  recruitment_effects <- function(mat, x, system, coefs = NULL, threshold = 0, ...) {
 
     # define system-specific coefficients
-    coefs <- list(
-      murray = c(-93.1, 25.2, 168.7, -34.0, 60.9, -14.9),
-      ovens = c(26.5, -10.7, -69.7, 12.2, 2.7, 2.4),
-      goulburn = c(92.0, 0.1, -28.7, -36.0, 4.5, -25.3),
-      king = c(-21.9, -6.9, -18.5, -30.9, 14.3, -3.6),
-      broken = c(-0.7, 7.1, -1.2, -7.3, 0.6, 16.1)
-    )
+    if (is.null(coefs)) {
+      coefs <- list(
+        murray_river = c(-93.1, 25.2, 168.7, -34.0, 60.9, -14.9),
+        ovens_river = c(26.5, -10.7, -69.7, 12.2, 2.7, 2.4),
+        goulburn_river = c(92.0, 0.1, -28.7, -36.0, 4.5, -25.3),
+        king_river = c(-21.9, -6.9, -18.5, -30.9, 14.3, -3.6),
+        broken_river = c(-0.7, 7.1, -1.2, -7.3, 0.6, 16.1),
+        broken_creek = c(-0.7, 7.1, -1.2, -7.3, 0.6, 16.1)
+      )
+
+      # need to know the system if coefs are not provided
+      if (!system %in% names(coefs)) {
+        stop(
+          "system must be specified if coefs are not provided, ",
+          "and must be one of murray_river, ovens_river, ",
+          "goulburn_river, king_river, broken_river, or broken_creek",
+          call. = FALSE
+        )
+      }
+      coefs <- coefs[[system]]
+
+    } else {
+
+      # need six coefficients
+      if (length(coefs) != 6) {
+        stop(
+          "coefs must include six values, one for each of ",
+          "flow variability, spring flows, max. antecedent flows, ",
+          "summer flows, winter flows, and spawning temperature",
+          .call = FALSE
+        )
+      }
+
+    }
 
     # nolint end
-    if (system == "goulburn" | system == "murray")
-      coefs <- coefs$murray
-    if (system == "campaspe")
-      coefs <- coefs$broken
 
     # pull out relevant system
     names(coefs) <- c(
@@ -282,7 +325,7 @@ template_murray_cod <- function(
       x$proportional_winter_flow,
       x$spawning_temperature
     )
-    effect <- metrics * (1 + (coefs / 100))
+    effect <- 1 + (metrics * (coefs / 100))
 
     # fill NAs
     effect[is.na(effect)] <- 0
@@ -298,6 +341,11 @@ template_murray_cod <- function(
     # threshold effect to avoid really small values (recruitment always
     #   occurs for MC)
     effect[effect < threshold] <- threshold
+
+    # divide by early life survival to avoid double counting
+    #  (is included in reproduction_gen function and needs to be
+    #   there so non-covar models still work)
+    effect <- effect
 
     # calculate change in fecundity
     mat <- mat * effect

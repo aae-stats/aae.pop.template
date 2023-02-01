@@ -235,12 +235,22 @@ template_macquarie_perch <- function(
     reproduction(popmat, dims = reproductive),
     reproduction(popmat, dims = reproductive)
   )
+  # density_masks <- list(
+  #   transition(popmat),
+  #   reproduction(popmat, dims = reproductive)
+  # )
 
   # bottom-up effects of density on early survival
   #   through competition for resources
   bh <- function(x, pop, theta = 0.2, ...) {
     x / (1 + theta * x * sum(pop[reproductive]) / k)
   }
+
+  # define basic biomass-based density dependence
+  # biomass_dd <- function(x, pop, ...) {
+  #   sum_n <- sum(pop[reproductive])
+  #   x * ifelse(sum_n > k, k / sum_n, 1)
+  # }
 
   # positive density dependence (Allee effect)
   allee_fn <- function(mat, pop, allee_strength = 1, allee_factor = 10, ...) {
@@ -254,6 +264,10 @@ template_macquarie_perch <- function(
     masks = density_masks,
     funs = list(bh, allee_fn)
   )
+  # dens_depend <- density_dependence(
+  #   masks = density_masks,
+  #   funs = list(biomass_dd, allee_fn)
+  # )
 
   # define environmental stochasticity
   envstoch <- environmental_stochasticity(
@@ -372,7 +386,7 @@ template_macquarie_perch <- function(
     recruit_effects_lake <- function(
       mat, x, recruit_param = -0.5, shift = 10, ...
     ) {
-      mat * (1 / (1 + exp(-recruit_param * (x$water_level_change + shift))))
+      mat * (0.4 + (1 / (1 + exp(-recruit_param * (x$water_level_change + shift)))))
     }
 
     # update effects and masks
@@ -386,12 +400,12 @@ template_macquarie_perch <- function(
     recruit_effects_river <- function(
       mat, x, recruit_param = -0.01, shift = 200, ...
     ) {
-      mat * (1 / (1 + exp(recruit_param * (x$river_height_change + shift))))
+      mat * (0.4 + (1 / (1 + exp(recruit_param * (x$river_height_change + shift)))))
     }
 
     # negative effect of low flows on adult survival
     survival_effects_river <- function(
-      mat, x, survival_param = c(0.2, -0.2), ...
+      mat, x, survival_param = c(0.2, -0.2), ctf_param = 1, ctf_threshold = 3, ...
     ) {
 
       # positive effect of flow on overall population growth rate
@@ -400,6 +414,16 @@ template_macquarie_perch <- function(
       scale_factor <- exp(
         survival_param[1] * log_flow + survival_param[2] * (log_flow ^ 2)
       )
+
+      # negative effects of CTF on survival
+      scale_factor <- scale_factor *
+        ifelse(
+          x$min_daily_flow < ctf_threshold,
+          exp(ctf_param * x$min_daily_flow) / exp(ctf_threshold * ctf_param),
+          1
+        )
+
+      # check bounds and apply
       scale_factor[scale_factor > 1] <- 1
       scale_factor[scale_factor < 0] <- 0
       mat <- mat * scale_factor
