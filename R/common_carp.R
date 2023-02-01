@@ -119,10 +119,10 @@ template_common_carp <- function(
                    "permanent_wetland",
                    "floodplain")
   ) {
-    stop('system must be one of "main_channel"',
-         '"river_wetland", "ephemeral_wetland"',
-         '"permanent_wetland", or "floodplain" ',
-         'in a call to common_carp',
+    stop("system must be one of main_channel, ",
+         "river_wetland, ephemeral_wetland, ",
+         "permanent_wetland, or floodplain",
+         "in a call to common_carp",
          call. = FALSE)
   }
 
@@ -209,7 +209,7 @@ template_common_carp <- function(
       # no summer flows effect for now but TBD
 
       # return
-      mat
+      early_surv * mat
 
   }
 
@@ -236,12 +236,15 @@ template_common_carp <- function(
     all_classes(popmat, dim = reproductive)
   )
   dd_n_fns <- list(
-    function(pop, n_yoy, add_yoy, ...)
-      add_remove(pop = pop, n = n_yoy, add = add_yoy),
-    function(pop, n_twoplus, add_twoplus, ...)
-      add_remove(pop = pop, n = n_twoplus, add = add_twoplus),
-    function(pop, n_adult, add_adult, ...)
+    function(pop, n_yoy, add_yoy, ...) {
+      add_remove(pop = pop, n = n_yoy, add = add_yoy)
+    },
+    function(pop, n_twoplus, add_twoplus, ...) {
+      add_remove(pop = pop, n = n_twoplus, add = add_twoplus)
+    },
+    function(pop, n_adult, add_adult, ...) {
       add_remove(pop = pop, n = n_adult, add = add_adult)
+    }
   )
   dens_depend_n <- density_dependence_n(
     masks = dd_n_masks,
@@ -328,7 +331,7 @@ args_common_carp <- function(
     if (!is.matrix(add)) {
       add <- matrix(rep(add, ntime), nrow = 3)
     } else {
-      if (nrow(add) != 3 | ncol(add) != ntime) {
+      if (nrow(add) != 3 || ncol(add) != ntime) {
         stop("if add is a matrix, it must have three rows ",
              "and ntime columns (ntime = ", ntime, ")",
              call. = FALSE)

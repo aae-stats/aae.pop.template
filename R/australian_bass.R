@@ -142,7 +142,9 @@ template_australian_bass <- function(
     age_frequency[-1] / age_frequency[-length(age_frequency)]
 
   # tweak new stages that give wacky survival estimates
-  popmat[aae.pop::transition(popmat)][41:49] <- (1 - seq(0.1, 0.9, length = 9)) * popmat[aae.pop::transition(popmat)][40]
+  popmat[aae.pop::transition(popmat)][41:49] <-
+    (1 - seq(0.1, 0.9, length = 9)) *
+    popmat[aae.pop::transition(popmat)][40]
 
   # add reproduction
   fecundity_by_age <- exp(
@@ -262,12 +264,15 @@ template_australian_bass <- function(
       pop[1] <- add_remove(pop = pop[1], n = n_yoy, add = add_yoy)
       pop
     },
-    function(pop, n_twoplus, add_twoplus, ...)
-      add_remove(pop = pop, n = n_twoplus, add = add_twoplus),
-    function(pop, n_threeplus, add_threeplus, ...)
-      add_remove(pop = pop, n = n_threeplus, add = add_threeplus),
-    function(pop, n_adult, add_adult, ...)
-      add_remove(pop = pop, n = n_adult, add = add_adult),
+    function(pop, n_twoplus, add_twoplus, ...) {
+      add_remove(pop = pop, n = n_twoplus, add = add_twoplus)
+    },
+    function(pop, n_threeplus, add_threeplus, ...) {
+      add_remove(pop = pop, n = n_threeplus, add = add_threeplus)
+    },
+    function(pop, n_adult, add_adult, ...) {
+      add_remove(pop = pop, n = n_adult, add = add_adult)
+    },
     go_fishing
   )
   dens_depend_n <- aae.pop::density_dependence_n(
@@ -356,7 +361,7 @@ args_australian_bass <- function(
     if (!is.matrix(add)) {
       add <- matrix(rep(add, ntime), nrow = 4)
     } else {
-      if (nrow(add) != 4 | ncol(add) != ntime) {
+      if (nrow(add) != 4 || ncol(add) != ntime) {
         stop("if add is a matrix, it must have three rows ",
              "and ntime columns (ntime = ", ntime, ")",
              call. = FALSE)

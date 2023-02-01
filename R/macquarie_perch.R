@@ -228,7 +228,8 @@ template_macquarie_perch <- function(
   nclass <- length(survival_mean) + 1
   popmat <- matrix(0, nrow = nclass, ncol = nclass)
   popmat[aae.pop::transition(popmat)] <- survival_mean
-  popmat[aae.pop::reproduction(popmat, dims = reproductive)] <- reproduction_mean
+  popmat[aae.pop::reproduction(popmat, dims = reproductive)] <-
+    reproduction_mean
 
   # define density dependence, only affects adult survival
   #   and reproductive stages
@@ -310,12 +311,15 @@ template_macquarie_perch <- function(
     aae.pop::all_classes(popmat)
   )
   dd_n_fns <- list(
-    function(pop, n_yoy, add_yoy, ...)
-      add_remove(pop = pop, n = n_yoy, add = add_yoy),
-    function(pop, n_twoplus, add_twoplus, ...)
-      add_remove(pop = pop, n = n_twoplus, add = add_twoplus),
-    function(pop, n_adult, add_adult, ...)
-      add_remove(pop = pop, n = n_adult, add = add_adult),
+    function(pop, n_yoy, add_yoy, ...) {
+      add_remove(pop = pop, n = n_yoy, add = add_yoy)
+    },
+    function(pop, n_twoplus, add_twoplus, ...) {
+      add_remove(pop = pop, n = n_twoplus, add = add_twoplus)
+    },
+    function(pop, n_adult, add_adult, ...) {
+      add_remove(pop = pop, n = n_adult, add = add_adult)
+    },
     go_fishing
   )
   dens_depend_n <- aae.pop::density_dependence_n(
@@ -373,7 +377,9 @@ template_macquarie_perch <- function(
     recruit_effects_lake <- function(
       mat, x, recruit_param = -0.5, shift = 10, ...
     ) {
-      mat * (0.4 + (1 / (1 + exp(-recruit_param * (x$water_level_change + shift)))))
+      mat * (
+        0.4 + (1 / (1 + exp(-recruit_param * (x$water_level_change + shift))))
+      )
     }
 
     # update effects and masks
@@ -387,12 +393,19 @@ template_macquarie_perch <- function(
     recruit_effects_river <- function(
       mat, x, recruit_param = -0.01, shift = 200, ...
     ) {
-      mat * (0.4 + (1 / (1 + exp(recruit_param * (x$river_height_change + shift)))))
+      mat * (
+        0.4 + (1 / (1 + exp(recruit_param * (x$river_height_change + shift))))
+      )
     }
 
     # negative effect of low flows on adult survival
     survival_effects_river <- function(
-      mat, x, survival_param = c(0.2, -0.2), ctf_param = 1, ctf_threshold = 3, ...
+      mat,
+      x,
+      survival_param = c(0.2, -0.2),
+      ctf_param = 1,
+      ctf_threshold = 3,
+      ...
     ) {
 
       # positive effect of flow on overall population growth rate
@@ -526,7 +539,7 @@ args_macquarie_perch <- function(
     if (!is.matrix(add)) {
       add <- matrix(rep(add, ntime), nrow = 3)
     } else {
-      if (nrow(add) != 3 | ncol(add) != ntime) {
+      if (nrow(add) != 3 || ncol(add) != ntime) {
         stop("if add is a matrix, it must have three rows ",
              "and ntime columns (ntime = ", ntime, ")",
              call. = FALSE)
@@ -576,120 +589,5 @@ args_macquarie_perch <- function(
     )
 
   )
-
-}
-
-# internal function: to be exported when finalised
-#   Plot covariate effects and list parameters for all
-# make this a general method with species as an argument
-plot_covariates <- function(mat, x, species, parameters) {
-
-  pars <- list(
-    spawning_param = c(-0.01, -0.05),  # recruit effects
-    variability_param = -0.003,        # recruit effects
-    recruit_param = -0.5,              # recruit effects
-    shift = 10,                        # recruit effects
-    survival_param = c(0.2, -0.2)      # survival effects, in river only
-  )
-
-  # define covariate effects on recruitment in all systems
-  plot_recruit_effects <- list(
-    function(
-      mat, x, spawning_param = c(-0.01, -0.05), variability_param = -0.003, ...
-    ) {
-
-      # effect of spawning-flow magnitude on recruitment
-      # negative effect of Nov/Dec discharge on recruitment
-      log_flow <- log(x$spawning_flow + 0.01)
-      scale_factor <- exp(
-        spawning_param[1] * log_flow + spawning_param[2] * (log_flow ^ 2)
-      )
-      scale_factor[scale_factor > 1] <- 1
-      scale_factor[scale_factor < 0] <- 0
-      mat <- mat * scale_factor
-
-      # effect of spawning-flow variability on recruitment
-      # negative effect of Nov/Dec discharge variability on recruitment
-      #   (days with more than 100% change from previous)
-      mat <- mat * exp(-variability_param * x$spawning_variability)
-
-      # optional effect of water temperature, needs 2 consecutive days
-      #   above 16C for spawning to start, with occurrence time within
-      #   the spawning period altering the probability of spawning.
-      # Optionally also includes survival over 15 days following
-      #   spawning (in metric calculation) but that is probably
-      #   double-counting the egg and larval survival phase
-      if (!is.null(x$temperature_effect))
-        mat <- mat * x$temperature_effect
-
-      # return
-      mat
-
-    }
-  )
-
-  # define covariate effects on adult survival in all systems
-  survival_effects <- NULL
-
-  # define covariate masks in all systems
-  recruit_masks <- list(aae.pop::reproduction(popmat))
-  survival_masks <- NULL
-
-  # add system-specific covariate effects
-  if (system == "lake") {
-
-    # negative effect of rising lake level on YOY
-    recruit_effects_lake <- function(
-      mat, x, recruit_param = -0.5, shift = 10, ...
-    ) {
-      mat * (1 / (1 + exp(-recruit_param * (x$water_level_change + shift))))
-    }
-
-    # update effects and masks
-    recruit_effects <- c(recruit_effects, list(recruit_effects_lake))
-    recruit_masks <- c(recruit_masks, list(aae.pop::reproduction(popmat)))
-
-  }
-  if (system == "river") {
-
-    # negative effect of rising river level on YOY
-    recruit_effects_river <- function(
-      mat, x, recruit_param = -0.01, shift = 200, ...
-    ) {
-      mat * (1 / (1 + exp(recruit_param * (x$river_height_change + shift))))
-    }
-
-    # negative effect of low flows on adult survival
-    survival_effects_river <- function(
-      mat, x, survival_param = c(0.2, -0.2), ...
-    ) {
-
-      # positive effect of flow on overall population growth rate
-      #    (based on individuals 1 year or older)
-      log_flow <- log(x$average_daily_flow + 0.01)
-      scale_factor <- exp(
-        survival_param[1] * log_flow + survival_param[2] * (log_flow ^ 2)
-      )
-      scale_factor[scale_factor > 1] <- 1
-      scale_factor[scale_factor < 0] <- 0
-      mat <- mat * scale_factor
-
-      # return
-      mat
-
-    }
-
-    # update effects and masks
-    recruit_effects <- c(recruit_effects, list(recruit_effects_river))
-    recruit_masks <- c(recruit_masks, list(aae.pop::reproduction(mat)))
-    survival_effects <- c(survival_effects, list(survival_effects_river))
-    survival_masks <- c(
-      survival_masks, list(aae.pop::transition(mat, dims = 2:30))
-    )
-
-  }
-
-  # plot it
-  NULL
 
 }

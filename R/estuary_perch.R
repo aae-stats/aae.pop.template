@@ -241,12 +241,15 @@ template_estuary_perch <- function(
     all_classes(popmat)
   )
   dd_n_fns <- list(
-    function(pop, n_yoy, add_yoy, ...)
-      add_remove(pop = pop, n = n_yoy, add = add_yoy),
-    function(pop, n_twoplus, add_twoplus, ...)
-      add_remove(pop = pop, n = n_twoplus, add = add_twoplus),
-    function(pop, n_adult, add_adult, ...)
-      add_remove(pop = pop, n = n_adult, add = add_adult),
+    function(pop, n_yoy, add_yoy, ...) {
+      add_remove(pop = pop, n = n_yoy, add = add_yoy)
+    },
+    function(pop, n_twoplus, add_twoplus, ...) {
+      add_remove(pop = pop, n = n_twoplus, add = add_twoplus)
+    },
+    function(pop, n_adult, add_adult, ...) {
+      add_remove(pop = pop, n = n_adult, add = add_adult)
+    },
     go_fishing
   )
   dens_depend_n <- density_dependence_n(

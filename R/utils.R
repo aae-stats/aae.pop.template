@@ -18,7 +18,7 @@ add_remove <- function(
   if (n > 0) {
 
     # check there are enough individuals to remove
-    if (sum(pop) < n & !add) {
+    if (sum(pop) < n && !add) {
       n <- sum(pop)
       warning("removal required more individuals than ",
               "were available; reduced to ",
