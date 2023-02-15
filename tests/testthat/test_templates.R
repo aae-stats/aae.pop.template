@@ -238,7 +238,7 @@ test_that("rainbowfish template returns correct dynamics object", {
   expect_equal(dim(sim), c(1L, 5L, 51L))
 
   # expect most processes to be defined
-  expect_null(class(dyn$dynamics$density_dependence_n))
+  expect_null(dyn$dynamics$density_dependence_n)
   expect_equal(
     class(dyn$dynamics$covariates),
     c("covariates", "function")
