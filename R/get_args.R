@@ -78,14 +78,15 @@ check_species_args <- function(x) {
 
   # currently implemented species
   sp_list <- c(
-    "murray_cod",
-    "macquarie_perch",
-    "platypus",
-    "estuary_perch",
-    "pygmy_perch",
-    "barred_galaxias",
     "australian_bass",
-    "common_carp"
+    "barred_galaxias",
+    "common_carp",
+    "estuary_perch",
+    "macquarie_perch",
+    "murray_cod",
+    "murray_darling_rainbowfish",
+    "platypus",
+    "pygmy_perch"
   )
 
   # give x a fighting chance with fuzzy matching
