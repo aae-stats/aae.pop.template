@@ -99,6 +99,9 @@ template_murray_darling_rainbowfish <- function(k = 10000, ntime = 50) {
     bh
   )
 
+  # set a small threshold so the qlogis/plogis transformations work
+  eps <- 1e-5
+
   # covariate effects based on low water temperatures, the
   #   presence of exotic predators, and habitat condition
   survival_effects <- function(
@@ -122,6 +125,9 @@ template_murray_darling_rainbowfish <- function(k = 10000, ntime = 50) {
     # and habitat condition for spawning
     if (!is.null(x$instream_cover))
       scale <- x$instream_cover * scale
+
+    # make sure scale is between 0 and 1
+    scale <- ifelse(scale > 1, 1 - eps, ifelse(scale < 0, eps, scale))
 
     # and return
     mat * scale
@@ -154,6 +160,9 @@ template_murray_darling_rainbowfish <- function(k = 10000, ntime = 50) {
     # and habitat condition for spawning
     if (!is.null(x$instream_cover))
       scale <- x$instream_cover * scale
+
+    # make sure scale is between 0 and 1
+    scale <- ifelse(scale > 1, 1 - eps, ifelse(scale < 0, eps, scale))
 
     # and return
     mat * scale
