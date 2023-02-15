@@ -93,7 +93,7 @@ template_murray_darling_rainbowfish <- function(k = 10000, ntime = 50) {
 
   # define contest competition
   k_female <- k * 0.5     # assumes 50:50 F:M sex ratio in adults
-  bh <- aae.pop::beverton_holt(n = k_female)
+  bh <- aae.pop::beverton_holt(k = k_female)
   dens_depend <- density_dependence(
     reproduction(popmat, dims = reproductive),
     bh
