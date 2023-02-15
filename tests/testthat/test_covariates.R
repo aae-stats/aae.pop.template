@@ -46,6 +46,14 @@ covars <- list(
     spawning_temperature = rlnorm(n)
   ),
 
+  murray_darling_rainbowfish = data.frame(
+    instream_cover = runif(n, 0, 1),
+    nday_gt20 = rpois(n, lambda = 50),
+    nday_lt10 = rpois(n, lambda = 5),
+    gambusia = sample(c(0, 1), size = n, replace = TRUE),
+    redfin = sample(c(0, 1), size = n, replace = TRUE)
+  ),
+
   platypus = data.frame(
     proportional_spring_flow = rlnorm(n),
     proportional_summer_flow = rlnorm(n, mean = -0.5),
@@ -202,6 +210,15 @@ test_that("simulate works with covariates", {
     )
   )
   expect_equal(dim(sim), c(10L, 50L, n + 1))
+
+  # simulate from a rainbowfish object with covariates
+  dyn <- murray_darling_rainbowfish()
+  sim <- simulate(
+    dyn,
+    nsim = 10,
+    args = list(covariates = format_covariates(covars$murray_darling_rainbowfish))
+  )
+  expect_equal(dim(sim), c(10L, 5L, n + 1))
 
   # simulate from a platypus object with covariates
   dyn <- platypus()
