@@ -116,7 +116,7 @@ template_murray_darling_rainbowfish <- function(k = 10000, ntime = 50) {
 
     # survival requires water temperatures above 10C in winter
     if (!is.null(x$nday_lt10))
-      scale <- ifelse(x$nday_lt10 > 5, 0, scale)
+      scale <- ifelse(x$nday_lt10 > 5, 0.05 * scale, scale)
 
     # and negative effects of redfin presence
     if (!is.null(x$redfin))
