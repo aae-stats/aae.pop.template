@@ -78,17 +78,17 @@ template_murray_darling_rainbowfish <- function(k = 10000, ntime = 50) {
 
   # basic reproduction settings
   sex_ratio <- 0.5
-  early_surv <- 0.3
-  fecundity <- c(0, 50, 100, 150, 200)
+  early_surv <- 0.01
+  fecundity <- c(0, 5000, 7000, 8000, 15000)
 
   # define base matrix
   # fecundity of ~ 50-300, but can have multiple breeding attempts
   popmat <- rbind(
     sex_ratio * early_surv * fecundity,
-    c(0.3, 0.25, 0,    0,    0),
-    c(0,   0.35, 0.31, 0,    0),
-    c(0,   0,    0.29, 0.35, 0),
-    c(0,   0,    0,    0.38, 0.41)
+    c(0.1, 0.51, 0,    0,    0),
+    c(0,   0.35, 0.55, 0,    0),
+    c(0,   0,    0.57, 0.60, 0),
+    c(0,   0,    0,    0.54, 0.57)
   )
 
   # define contest competition
@@ -135,14 +135,39 @@ template_murray_darling_rainbowfish <- function(k = 10000, ntime = 50) {
   }
 
   # temperature effects on reproduction:
-  #    consider number of days above 20C (breeding threshold)
-  #    and assume one breeding attempt every 30 days where
-  #    temperatures are suitable
+  #    - require water temperatures above 20C (breeding threshold)
+  #        and assume one breeding attempt every 30 days where
+  #        temperatures are suitable
+  #    - assume gambusia reduce survival of larvae by 70%
+  #    - assume instream habitat condition has a linear effect on
+  #        reproductive output and early life survival
+  #    - assume low spring and high summer flows lead to high
+  #        reproductive output, boosted by low flow variability
   reproduction_effects <- function(
     mat,
     x,
+    coefs = NULL,
     ...
   ) {
+
+    # set default coefs if not specified
+    if (is.null(coefs)) {
+
+      # defaults
+      coefs <- c(-50, -10, 30)
+
+    } else {
+
+      # need three coefficients
+      if (length(coefs) != 3) {
+        stop(
+          "coefs must include three values, one for each of ",
+          "flow variability, spring flows and summer flows",
+          .call = FALSE
+        )
+      }
+
+    }
 
     # default to a single breeding attempt with no negative
     #   impacts of exotic species or habitat condition
@@ -160,6 +185,28 @@ template_murray_darling_rainbowfish <- function(k = 10000, ntime = 50) {
     # and habitat condition for spawning
     if (!is.null(x$instream_cover))
       scale <- x$instream_cover * scale
+
+    # calculate scaling factor by year
+    metrics <- c(
+      x$spawning_flow_variability,
+      x$proportional_spring_flow,
+      x$proportional_summer_flow
+    )
+    effect <- 1 + (metrics * (coefs / 100))
+
+    # fill NAs
+    effect[is.na(effect)] <- 0
+
+    # and set negative values to zero
+    effect[effect < 0] <- 0
+
+    # summarise over all metrics
+    #   - using product, which will limit to bottlenecks
+    #     (e.g., 100% mortality in any stage = 0 survival overall)
+    effect <- prod(effect)
+
+    # and multiply by previously calculated scaling effect
+    scale <- effect * scale
 
     # make sure scale is between 0 and 1
     scale <- ifelse(scale > 1, 1 - eps, ifelse(scale < 0, eps, scale))

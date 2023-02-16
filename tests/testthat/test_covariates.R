@@ -51,7 +51,10 @@ covars <- list(
     nday_gt20 = rpois(n, lambda = 50),
     nday_lt10 = rpois(n, lambda = 5),
     gambusia = sample(c(0, 1), size = n, replace = TRUE),
-    redfin = sample(c(0, 1), size = n, replace = TRUE)
+    redfin = sample(c(0, 1), size = n, replace = TRUE),
+    spawning_flow_variability = rnorm(n),
+    proportional_spring_flow = rnorm(n),
+    proportional_summer_flow = rnorm(n)
   ),
 
   platypus = data.frame(
@@ -217,6 +220,20 @@ test_that("simulate works with covariates", {
     dyn,
     nsim = 10,
     args = list(covariates = format_covariates(covars$murray_darling_rainbowfish))
+  )
+  expect_equal(dim(sim), c(10L, 5L, n + 1))
+
+  # and with different coefficients for covariate effects
+  dyn <- murray_darling_rainbowfish()
+  sim <- simulate(
+    dyn,
+    nsim = 10,
+    args = list(
+      covariates = c(
+        format_covariates(covars$murray_darling_rainbowfish),
+        list(coefs = c(200, 100, 20))
+      )
+    )
   )
   expect_equal(dim(sim), c(10L, 5L, n + 1))
 
