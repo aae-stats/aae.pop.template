@@ -163,7 +163,7 @@ template_murray_darling_rainbowfish <- function(k = 10000, ntime = 50) {
         stop(
           "coefs must include three values, one for each of ",
           "flow variability, spring flows and summer flows",
-          .call = FALSE
+          call. = FALSE
         )
       }
 
