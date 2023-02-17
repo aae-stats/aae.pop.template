@@ -84,7 +84,7 @@ check_species_args <- function(x) {
     "estuary_perch",
     "macquarie_perch",
     "murray_cod",
-    "murray_darling_rainbowfish",
+    "murray_rainbowfish",
     "platypus",
     "pygmy_perch",
     "river_blackfish"

@@ -1,4 +1,4 @@
-#' @name murray_darling_rainbowfish
+#' @name murray_rainbowfish
 #' @title Parameterised Murray-Darling rainbowfish population model
 #' @description Use a pre-defined population dynamics object to
 #'   simulate population dynamics of Murray-Darling rainbowfish
@@ -6,7 +6,7 @@
 #'   on existing data sets and published studies on Murray-Darling rainbowfish.
 NULL
 
-#' @rdname murray_darling_rainbowfish
+#' @rdname murray_rainbowfish
 #'
 #' @importFrom stats rnorm rpois plogis qlogis
 #' @import aae.pop
@@ -17,7 +17,7 @@ NULL
 #' @param ntime number of time steps used in population
 #'   simulation. Defaults to \code{50}
 #'
-#' @details The \code{murray_darling_rainbowfish} population model is a
+#' @details The \code{murray_rainbowfish} population model is a
 #'   stage-structured model with 5 classes and includes negative
 #'   density dependence, environmental and demographic
 #'   stochasticity, and optional associations with hydrological
@@ -31,33 +31,31 @@ NULL
 #'   (minimal) published literature on the species and are subject to
 #'   moderate levels of uncertainty.
 #'
-#'   The murray_darling_rainbowfish population template does not
+#'   The \code{murray_rainbowfish} population template does not
 #'   currently require additional arguments.
 #'
 #' @examples
 #' # define a basic model for Murray-Darling rainbowfish
-#' p <- murray_darling_rainbowfish()
+#' p <- murray_rainbowfish()
 #'
 #' # simulate from this model
 #' sims <- simulate(p, nsim = 100)
 #'
 #' # plot the simulated values
 #' plot(sims)
-murray_darling_rainbowfish <- function(k = 10000, ntime = 50) {
+murray_rainbowfish <- function(k = 10000, ntime = 50) {
   get_template(
-    sp = "murray_darling_rainbowfish",
+    sp = "murray_rainbowfish",
     k = k,
     ntime = ntime
   )
 }
 
 # internal function: define species defaults
-template_murray_darling_rainbowfish <- function(k = 10000, ntime = 50) {
+template_murray_rainbowfish <- function(k = 10000, ntime = 50) {
 
-  # assume five length classes (in mm): 0-30, 30-40, 40-50, 50-70, >70
-  nstage <- 5
-
-  # reproductive for all but the first size class
+  # assume five length classes (in mm): 0-30, 30-40, 40-50, 50-70, >70,
+  #   reproductive for all but the first size class
   reproductive <- c(2L:5L)
 
   # define  a survival function
@@ -258,7 +256,7 @@ template_murray_darling_rainbowfish <- function(k = 10000, ntime = 50) {
 
   # collect arguments for species if required
   arguments <- get_args(
-    "murray_darling_rainbowfish",
+    "murray_rainbowfish",
     ntime = ntime
   )
 
@@ -276,11 +274,11 @@ template_murray_darling_rainbowfish <- function(k = 10000, ntime = 50) {
 
 }
 
-#' @rdname murray_darling_rainbowfish
+#' @rdname murray_rainbowfish
 #'
 #' @export
 #'
-args_murray_darling_rainbowfish <- function(ntime = 50) {
+args_murray_rainbowfish <- function(ntime = 50) {
 
   # return named list of args
   list()

@@ -46,7 +46,7 @@ covars <- list(
     spawning_temperature = rlnorm(n)
   ),
 
-  murray_darling_rainbowfish = data.frame(
+  murray_rainbowfish = data.frame(
     instream_cover = runif(n, 0, 1),
     nday_gt20 = rpois(n, lambda = 50),
     nday_lt10 = rpois(n, lambda = 5),
@@ -226,22 +226,24 @@ test_that("simulate works with covariates", {
   expect_equal(dim(sim), c(10L, 50L, n + 1))
 
   # simulate from a rainbowfish object with covariates
-  dyn <- murray_darling_rainbowfish()
+  dyn <- murray_rainbowfish()
   sim <- simulate(
     dyn,
     nsim = 10,
-    args = list(covariates = format_covariates(covars$murray_darling_rainbowfish))
+    args = list(
+      covariates = format_covariates(covars$murray_rainbowfish)
+    )
   )
   expect_equal(dim(sim), c(10L, 5L, n + 1))
 
   # and with different coefficients for covariate effects
-  dyn <- murray_darling_rainbowfish()
+  dyn <- murray_rainbowfish()
   sim <- simulate(
     dyn,
     nsim = 10,
     args = list(
       covariates = c(
-        format_covariates(covars$murray_darling_rainbowfish),
+        format_covariates(covars$murray_rainbowfish),
         list(coefs = c(200, 100, 20))
       )
     )
@@ -311,14 +313,14 @@ test_that("simulate errors informatively when covariates are specified
   )
 
   # simulate from a rainbowfish object with covariates
-  dyn <- murray_darling_rainbowfish()
+  dyn <- murray_rainbowfish()
   sim <- expect_error(
     simulate(
       dyn,
       nsim = 10,
       args = list(
         covariates = c(
-          format_covariates(covars$murray_darling_rainbowfish),
+          format_covariates(covars$murray_rainbowfish),
           list(coefs = c(200, 100, 20, 100))
         )
       )
