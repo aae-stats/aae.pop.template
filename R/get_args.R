@@ -86,7 +86,8 @@ check_species_args <- function(x) {
     "murray_cod",
     "murray_darling_rainbowfish",
     "platypus",
-    "pygmy_perch"
+    "pygmy_perch",
+    "river_blackfish"
   )
 
   # give x a fighting chance with fuzzy matching

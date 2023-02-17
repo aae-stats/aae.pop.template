@@ -70,6 +70,17 @@ covars <- list(
     habitat = runif(n, 0.3, 0.9),
     predators = sample(c(0, 1), size = n, replace = TRUE),
     dry = sample(c(0, 1), size = n, replace = TRUE)
+  ),
+
+  river_blackfish = data.frame(
+    instream_cover = runif(n, 0, 1),
+    nday_gt16 = rpois(n, lambda = 50),
+    nday_lt5 = rpois(n, lambda = 5),
+    spawning_flow_variability = rnorm(n),
+    proportional_spring_flow = rnorm(n),
+    proportional_summer_flow = rnorm(n),
+    proportional_winter_flow = rnorm(n),
+    antecedent_flow = rnorm(n)
   )
 
 )
@@ -237,6 +248,29 @@ test_that("simulate works with covariates", {
   )
   expect_equal(dim(sim), c(10L, 5L, n + 1))
 
+  # simulate from a river blackfish object with covariates
+  dyn <- river_blackfish()
+  sim <- simulate(
+    dyn,
+    nsim = 10,
+    args = list(covariates = format_covariates(covars$river_blackfish))
+  )
+  expect_equal(dim(sim), c(10L, 4L, n + 1))
+
+  # and with different coefficients for covariate effects
+  dyn <- river_blackfish()
+  sim <- simulate(
+    dyn,
+    nsim = 10,
+    args = list(
+      covariates = c(
+        format_covariates(covars$river_blackfish),
+        list(coefs = c(200, 100, 20, 5, 10))
+      )
+    )
+  )
+  expect_equal(dim(sim), c(10L, 4L, n + 1))
+
   # simulate from a platypus object with covariates
   dyn <- platypus()
   sim <- simulate(
@@ -254,5 +288,58 @@ test_that("simulate works with covariates", {
     args = list(covariates = format_covariates(covars$pygmy_perch))
   )
   expect_equal(dim(sim), c(10L, 4L, n + 1))
+
+})
+
+test_that("simulate errors informatively when covariates are specified
+  incorrectly", {
+
+  # simulate from a murray cod object with covariates
+  dyn <- murray_cod()
+  sim <- expect_error(
+    simulate(
+      dyn,
+      nsim = 10,
+      args = list(
+        covariates = c(
+          format_covariates(covars$murray_cod),
+          list(coefs = c(-10, 30, 50, -25, 50, 10, 5))
+        )
+      )
+    ),
+    "coefs must include six values"
+  )
+
+  # simulate from a rainbowfish object with covariates
+  dyn <- murray_darling_rainbowfish()
+  sim <- expect_error(
+    simulate(
+      dyn,
+      nsim = 10,
+      args = list(
+        covariates = c(
+          format_covariates(covars$murray_darling_rainbowfish),
+          list(coefs = c(200, 100, 20, 100))
+        )
+      )
+    ),
+    "coefs must include three values"
+  )
+
+  # simulate from a river blackfish object with covariates
+  dyn <- river_blackfish()
+  sim <- expect_error(
+    simulate(
+      dyn,
+      nsim = 10,
+      args = list(
+        covariates = c(
+          format_covariates(covars$river_blackfish),
+          list(coefs = c(200, 100, 20, 5, 10, 10))
+        )
+      )
+    ),
+    "coefs must include five values"
+  )
 
 })

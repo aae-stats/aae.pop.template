@@ -258,6 +258,34 @@ test_that("rainbowfish template returns correct dynamics object", {
 
 })
 
+test_that("river blackfish template returns correct dynamics object", {
+
+  # simulate from a Murray cod object
+  dyn <- river_blackfish()
+  sim <- simulate(dyn)
+  expect_equal(dim(sim), c(1L, 4L, 51L))
+
+  # expect most processes to be defined
+  expect_null(dyn$dynamics$density_dependence_n)
+  expect_equal(
+    class(dyn$dynamics$covariates),
+    c("covariates", "function")
+  )
+  expect_equal(
+    class(dyn$dynamics$density_dependence),
+    c("density_dependence", "function")
+  )
+  expect_equal(
+    class(dyn$dynamics$demographic_stochasticity),
+    c("demographic_stochasticity", "function")
+  )
+  expect_equal(
+    class(dyn$dynamics$environmental_stochasticity),
+    c("environmental_stochasticity", "function")
+  )
+
+})
+
 test_that("get_template returns correct template without species wrappers", {
 
   # check Murray cod template
