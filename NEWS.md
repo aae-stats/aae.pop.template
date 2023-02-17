@@ -1,6 +1,18 @@
 # aae.pop.templates (development version)
 
+## aae.pop.templates 0.0.3.9002
+
+### Features
+
+- Add template for river blackfish
+
+### API changes
+
+- `murray_darling_rainbowfish` template name changed to `murray_rainbowfish`
+
 ## aae.pop.templates 0.0.3.9001
+
+### Features
 
 - Add template for Murray-Darling rainbowfish
 
