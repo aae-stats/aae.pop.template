@@ -56,10 +56,8 @@ river_blackfish <- function(k = 1000, ntime = 50) {
 # internal function: define species defaults
 template_river_blackfish <- function(k = 1000, ntime = 50) {
 
-  # assume five length classes (in mm): 0-80, 80-140, 140-200, >200
-  nstage <- 4
-
-  # reproductive for all but the first size class
+  # assume five length classes (in mm): 0-80, 80-140, 140-200, >200,
+  #   reproductive for all but the first size class
   reproductive <- c(2L:4L)
 
   # define  a survival function
@@ -87,8 +85,8 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
   # fecundity of ~ 50-300, but can have multiple breeding attempts
   popmat <- rbind(
     sex_ratio * early_surv * fecundity,
-    c(0.12, 0,    0,    0   ),
-    c(0,    0.10, 0,    0   ),
+    c(0.12, 0,    0,    0),
+    c(0,    0.10, 0,    0),
     c(0,    0,    0.45, 0.25)
   )
 
