@@ -144,7 +144,7 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
     mat,
     x,
     coefs = NULL,
-    temperature_coefficient = 0.5,
+    temperature_coefficient = 1.0,
     ...
   ) {
 
@@ -152,7 +152,7 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
     if (is.null(coefs)) {
 
       # defaults
-      coefs <- c(-50, -10, 30, 10, 10)
+      coefs <- c(-100, 20, 5, 20, 20)
 
     } else {
 

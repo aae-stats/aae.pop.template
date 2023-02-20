@@ -1,5 +1,11 @@
 # aae.pop.templates (development version)
 
+## aae.pop.templates 0.0.3.9003
+
+### Features
+
+- Update default river blackfish coefficients with inference methods
+
 ## aae.pop.templates 0.0.3.9002
 
 ### Features
