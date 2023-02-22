@@ -152,7 +152,7 @@ template_murray_rainbowfish <- function(k = 10000, ntime = 50) {
     if (is.null(coefs)) {
 
       # defaults
-      coefs <- c(-50, -10, 30)
+      coefs <- c(-100, 10, 20)
 
     } else {
 

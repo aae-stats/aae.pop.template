@@ -1,10 +1,16 @@
 # aae.pop.templates (development version)
 
+## aae.pop.templates 0.0.3.9004
+
+### Features
+
+- Update default Murray rainbowfish coefficients based on inference
+
 ## aae.pop.templates 0.0.3.9003
 
 ### Features
 
-- Update default river blackfish coefficients with inference methods
+- Update default river blackfish coefficients based on inference
 
 ## aae.pop.templates 0.0.3.9002
 
