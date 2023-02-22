@@ -1,36 +1,23 @@
-# aae.pop.templates (development version)
+# aae.pop.templates 0.0.4
 
-## aae.pop.templates 0.0.3.9004
+## Features
 
-### Features
+- Add template for river blackfish and set default coefficients based on
+    inference (`river_blackfish`)
+- Add template for Murray-Darling rainbowfish and set default coefficients
+    based on inference (`murray_rainbowfish`)
 
-- Update default Murray rainbowfish coefficients based on inference
 
-## aae.pop.templates 0.0.3.9003
+## API changes
 
-### Features
+- initial template name for rainbowfish (`murray_darling_rainbowfish`)
+    changed to `murray_rainbowfish`
 
-- Update default river blackfish coefficients based on inference
-
-## aae.pop.templates 0.0.3.9002
-
-### Features
-
-- Add template for river blackfish
-
-### API changes
-
-- `murray_darling_rainbowfish` template name changed to `murray_rainbowfish`
-
-## aae.pop.templates 0.0.3.9001
-
-### Features
-
-- Add template for Murray-Darling rainbowfish
 
 # aae.pop.templates 0.0.3
 
 - Add tests of covariate methods and carp and bass templates
+
 
 # aae.pop.templates 0.0.2
 
