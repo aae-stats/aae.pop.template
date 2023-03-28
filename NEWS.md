@@ -1,4 +1,11 @@
-# aae.pop.templates 0.0.4.9000 (development version)
+# aae.pop.templates (development version)
+
+# aae.pop.templates 0.0.4.9001
+
+## Features
+
+- Update hypoxia trigger options for Murray cod population model template
+
 
 # aae.pop.templates 0.0.4
 
