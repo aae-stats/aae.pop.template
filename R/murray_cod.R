@@ -267,7 +267,9 @@ template_murray_cod <- function(
 
   # covariate effects based on standardised discharge metrics
   #   - associations estimated and described in Tonkin et al. 2020 (STOTEN)
-  recruitment_effects <- function(mat, x, system, coefs = NULL, threshold = 0, ...) {
+  recruitment_effects <- function(
+    mat, x, system, coefs = NULL, threshold = 0, ...
+  ) {
 
     # define system-specific coefficients
     if (is.null(coefs)) {
@@ -356,11 +358,24 @@ template_murray_cod <- function(
 
   }
 
-  # low-flow effect that reduces survival when flow falls below 5 ML/day due
-  #    to increased risk of blackwater/hypoxic events
-  survival_effects <- function(mat, x, ...) {
-    scaling <- 0.8 + (0.2 / (1 + exp(-2 * (x$minimum_daily_flow - 5))))
+  # low-flow effect that reduces survival when there is a high risk of
+  #    a hypoxic blackwater event
+  # by default, occurs when flow falls below 5 ML/day due but can also
+  #     be specified as a binary term in x$blackwater_risk if reach-specific
+  #     conditions conducive to hypoxia are known
+  survival_effects <- function(mat, x, hypoxia_threshold = 5, ...) {
+
+    # calculate default impacts of low flows unless hypoxia triggers are
+    #   known
+    if (is.null(x$blackwater_risk))
+      scaling <- 0.8 +
+        (0.2 / (1 + exp(-2 * (x$minimum_daily_flow - hypoxia_threshold))))
+    else
+      scaling <- 0.5 * x$blackwater_risk
+
+    # calculate overall survival values and return
     scaling * mat
+
   }
   cov_effects <- list(
     recruitment_effects,
