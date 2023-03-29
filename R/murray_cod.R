@@ -371,7 +371,7 @@ template_murray_cod <- function(
       scaling <- 0.8 +
         (0.2 / (1 + exp(-2 * (x$minimum_daily_flow - hypoxia_threshold))))
     } else {
-      scaling <- 0.5 * x$blackwater_risk
+      scaling <- 1 - 0.5 * x$blackwater_risk
     }
 
     # calculate overall survival values and return
