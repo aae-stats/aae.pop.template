@@ -58,7 +58,9 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
 
   # assume five length classes (in mm): 0-80, 80-140, 140-200, >200,
   #   reproductive for all but the first size class
-  reproductive <- c(2L:4L)
+  ## UPDATE: trial 11-age class model
+  nstage <- 11
+  reproductive <- seq_len(nstage)[-1]
 
   # define  a survival function
   survival_gen <- function(mat, ...) {
@@ -78,17 +80,14 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
 
   # basic reproduction settings
   sex_ratio <- 0.5
-  early_surv <- 0.1
-  fecundity <- c(0, 150, 200, 300)
+  early_surv <- 0.025
+  fecundity <- c(0, seq(150, 300, length = nstage - 1L))
 
   # define base matrix
   # fecundity of ~ 50-300, but can have multiple breeding attempts
-  popmat <- rbind(
-    sex_ratio * early_surv * fecundity,
-    c(0.12, 0,    0,    0),
-    c(0,    0.10, 0,    0),
-    c(0,    0,    0.45, 0.25)
-  )
+  popmat <- matrix(0, nrow = nstage, ncol = nstage)
+  popmat[reproduction(popmat)] <- sex_ratio * early_surv * fecundity
+  popmat[transition(popmat)] <- c(0.3, 0.45, 0.5, 0.55, 0.6, 0.5, 0.4, 0.4, 0.3, 0.3)
 
   # define contest competition
   k_female <- k * 0.5     # assumes 50:50 F:M sex ratio in adults
@@ -104,6 +103,7 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
   # covariate effects based on low water temperatures (> 5C), high
   #   average flows in recent years, and habitat condition
   #   (snags or rocky cover)
+  # TODO: add effects of coldwater on juvenile survival (threshold unknown)
   survival_effects <- function(
     mat,
     x,
@@ -114,7 +114,7 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
     #   water temperatures, exotic species, or habitat condition
     scale <- 1
 
-    # survival requires water temperatures above 10C in winter
+    # survival requires water temperatures above 5C in winter
     if (!is.null(x$nday_lt5))
       scale <- ifelse(x$nday_lt5 > 5, 0.05 * scale, scale)
 
@@ -140,6 +140,7 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
   #    - assume high winter, spring, and antecedent flows result in high
   #        reproductive output, along with low summer flows and limited
   #        flow variability
+  #    - TODO: add effects of coldwater on reproductive output (< 18C in summer?)
   reproduction_effects <- function(
     mat,
     x,
@@ -212,10 +213,10 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
   covars <- covariates(
     masks = list(
       aae.pop::combine(
-        aae.pop::survival(popmat, dims = 4L),
+        aae.pop::survival(popmat, dims = nstage),
         aae.pop::transition(popmat)
       ),
-      aae.pop::reproduction(popmat, dims = 2L:4L)
+      aae.pop::reproduction(popmat, dims = reproductive)
     ),
     funs = list(
       survival_effects,
@@ -227,10 +228,10 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
   envstoch <- environmental_stochasticity(
     masks = list(
       aae.pop::combine(
-        aae.pop::survival(popmat, dims = 4L),
+        aae.pop::survival(popmat, dims = nstage),
         aae.pop::transition(popmat)
       ),
-      aae.pop::reproduction(popmat, dims = 2L:4L)
+      aae.pop::reproduction(popmat, dims = reproductive)
     ),
     funs = list(
       survival_gen,
