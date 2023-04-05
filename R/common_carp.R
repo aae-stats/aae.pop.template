@@ -231,9 +231,9 @@ template_common_carp <- function(
   # use density_dependence_n to include stocking or
   #   removals
   dd_n_masks <- list(
-    all_classes(popmat, dim = 1),
-    all_classes(popmat, dim = 2),
-    all_classes(popmat, dim = reproductive)
+    all_classes(popmat, dims = 1),
+    all_classes(popmat, dims = 2),
+    all_classes(popmat, dims = reproductive)
   )
   dd_n_fns <- list(
     function(pop, n_yoy, add_yoy, ...) {

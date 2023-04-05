@@ -253,9 +253,9 @@ template_australian_bass <- function(
   #   and fishing
   dd_n_masks <- list(
     all_classes(popmat),
-    all_classes(popmat, dim = 2),
-    all_classes(popmat, dim = 3),
-    all_classes(popmat, dim = reproductive),
+    all_classes(popmat, dims = 2),
+    all_classes(popmat, dims = 3),
+    all_classes(popmat, dims = reproductive),
     all_classes(popmat)
   )
   dd_n_fns <- list(

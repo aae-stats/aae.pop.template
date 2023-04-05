@@ -235,9 +235,9 @@ template_estuary_perch <- function(
   # use density_dependence_n to include stocking, translocations,
   #   and fishing
   dd_n_masks <- list(
-    all_classes(popmat, dim = 1),
-    all_classes(popmat, dim = 2),
-    all_classes(popmat, dim = reproductive),
+    all_classes(popmat, dims = 1),
+    all_classes(popmat, dims = 2),
+    all_classes(popmat, dims = reproductive),
     all_classes(popmat)
   )
   dd_n_fns <- list(
