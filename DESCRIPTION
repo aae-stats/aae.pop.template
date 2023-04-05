@@ -13,7 +13,7 @@ Author: c(
   )
 Maintainer: Jian Yen <jdl.yen@gmail.com>
 Description: Parameterised population dynamics models for use with the aae.pop package.
-License: Apache License 2.0 + file LICENSE
+License: Apache License 2.0
 URL: https://aae-stats/github.io/aae.pop, https://github.com/aae-stats/aae.pop.templates
 BugReports: https://github.com/aae-stats/aae.pop.templates/issues
 Encoding: UTF-8
