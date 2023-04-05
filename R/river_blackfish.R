@@ -86,7 +86,7 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
   # define base matrix
   # fecundity of ~ 50-300, but can have multiple breeding attempts
   popmat <- matrix(0, nrow = nstage, ncol = nstage)
-  popmat[reproduction(popmat)] <- sex_ratio * early_surv * fecundity
+  popmat[reproduction(popmat, dims = reproductive)] <- sex_ratio * early_surv * fecundity
   popmat[transition(popmat)] <- c(0.3, 0.45, 0.5, 0.55, 0.6, 0.5, 0.4, 0.4, 0.3, 0.3)
 
   # define contest competition
