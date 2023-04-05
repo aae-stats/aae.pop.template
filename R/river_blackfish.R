@@ -97,9 +97,6 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
     bh
   )
 
-  # set a small threshold so the qlogis/plogis transformations work
-  eps <- 1e-5
-
   # covariate effects based on low water temperatures (> 5C), high
   #   average flows in recent years, and habitat condition
   #   (snags or rocky cover)
@@ -113,6 +110,9 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
     # default to mean survival with no negative impacts of
     #   water temperatures, exotic species, or habitat condition
     scale <- 1
+
+    # set a small threshold so the qlogis/plogis transformations work
+    eps <- 1e-5
 
     # survival requires water temperatures above 5C in winter
     if (!is.null(x$nday_lt5))
@@ -173,6 +173,9 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
     #   water temperature
     scale <- 1
 
+    # set a small threshold so the qlogis/plogis transformations work
+    eps <- 1e-5
+
     # spawning requires temperatures above 16C
     if (!is.null(x$nday_gt16))
       scale <- 1 / (1 + exp(-temperature_coefficient * (x$nday_gt16 - 30)))
@@ -212,10 +215,7 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
   # combine into a covariates object
   covars <- covariates(
     masks = list(
-      aae.pop::combine(
-        aae.pop::survival(popmat, dims = nstage),
-        aae.pop::transition(popmat)
-      ),
+      aae.pop::transition(popmat),
       aae.pop::reproduction(popmat, dims = reproductive)
     ),
     funs = list(
@@ -227,10 +227,7 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
   # define environmental stochasticity
   envstoch <- environmental_stochasticity(
     masks = list(
-      aae.pop::combine(
-        aae.pop::survival(popmat, dims = nstage),
-        aae.pop::transition(popmat)
-      ),
+      aae.pop::transition(popmat),
       aae.pop::reproduction(popmat, dims = reproductive)
     ),
     funs = list(
