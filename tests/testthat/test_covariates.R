@@ -257,7 +257,7 @@ test_that("simulate works with covariates", {
     nsim = 10,
     args = list(covariates = format_covariates(covars$river_blackfish))
   )
-  expect_equal(dim(sim), c(10L, 4L, n + 1))
+  expect_equal(dim(sim), c(10L, 11L, n + 1))
 
   # and with different coefficients for covariate effects
   dyn <- river_blackfish()
@@ -271,7 +271,7 @@ test_that("simulate works with covariates", {
       )
     )
   )
-  expect_equal(dim(sim), c(10L, 4L, n + 1))
+  expect_equal(dim(sim), c(10L, 11L, n + 1))
 
   # simulate from a platypus object with covariates
   dyn <- platypus()
