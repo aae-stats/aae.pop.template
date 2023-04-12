@@ -80,7 +80,7 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
 
   # basic reproduction settings
   sex_ratio <- 0.5
-  early_surv <- 0.025
+  early_surv <- 0.1
   fecundity <- seq(150, 300, length = nstage - 1L)
 
   # define base matrix
