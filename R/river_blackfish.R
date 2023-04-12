@@ -86,8 +86,10 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
   # define base matrix
   # fecundity of ~ 50-300, but can have multiple breeding attempts
   popmat <- matrix(0, nrow = nstage, ncol = nstage)
-  popmat[reproduction(popmat, dims = reproductive)] <- sex_ratio * early_surv * fecundity
-  popmat[transition(popmat)] <- c(0.3, 0.45, 0.5, 0.55, 0.6, 0.5, 0.4, 0.4, 0.3, 0.3)
+  popmat[reproduction(popmat, dims = reproductive)] <-
+    sex_ratio * early_surv * fecundity
+  popmat[transition(popmat)] <-
+    c(0.2, 0.4, 0.5, 0.55, 0.4, 0.3, 0.2, 0.2, 0.1, 0.05)
 
   # define contest competition
   k_female <- k * 0.5     # assumes 50:50 F:M sex ratio in adults
@@ -100,7 +102,6 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
   # covariate effects based on low water temperatures (> 5C), high
   #   average flows in recent years, and habitat condition
   #   (snags or rocky cover)
-  # TODO: add effects of coldwater on juvenile survival (threshold unknown)
   survival_effects <- function(
     mat,
     x,
@@ -117,8 +118,6 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
     # survival requires water temperatures above 5C in winter
     if (!is.null(x$nday_lt5))
       scale <- ifelse(x$nday_lt5 > 5, 0.05 * scale, scale)
-
-    # TO ADD: function of rolling average flow as per MC model
 
     # and habitat condition for spawning
     if (!is.null(x$instream_cover))
@@ -140,12 +139,14 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
   #    - assume high winter, spring, and antecedent flows result in high
   #        reproductive output, along with low summer flows and limited
   #        flow variability
-  #    - TODO: add effects of coldwater on reproductive output (< 18C in summer?)
+  #    - coldwater during summer (< 18C) has a negative effect on
+  #        reproductive output
   reproduction_effects <- function(
     mat,
     x,
     coefs = NULL,
     temperature_coefficient = 1.0,
+    coldwater_coefficient = 1.0,
     ...
   ) {
 
@@ -179,6 +180,10 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
     # spawning requires temperatures above 16C
     if (!is.null(x$nday_gt16))
       scale <- 1 / (1 + exp(-temperature_coefficient * (x$nday_gt16 - 30)))
+
+    # and above 18C for later in spring/summer
+    if (!is.null(x$nday_lt18))
+      scale <- 1 / (1 + exp(coldwater_coefficient * (x$nday_lt18 - 10)))
 
     # calculate scaling factor by year
     metrics <- c(
