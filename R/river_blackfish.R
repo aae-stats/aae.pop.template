@@ -119,7 +119,7 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
     if (!is.null(x$nday_lt5))
       scale <- ifelse(x$nday_lt5 > 5, 0.05 * scale, scale)
 
-    # and habitat condition for spawning
+    # and habitat condition for shelter and nesting
     if (!is.null(x$instream_cover))
       scale <- x$instream_cover * scale
 
@@ -145,8 +145,8 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
     mat,
     x,
     coefs = NULL,
-    temperature_coefficient = 1.0,
-    coldwater_coefficient = 1.0,
+    temperature_coefficient = 0.1,
+    coldwater_coefficient = 0.05,
     ...
   ) {
 
@@ -183,7 +183,7 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
 
     # and above 18C for later in spring/summer
     if (!is.null(x$nday_lt18))
-      scale <- 1 / (1 + exp(coldwater_coefficient * (x$nday_lt18 - 10)))
+      scale <- 1 / (1 + exp(coldwater_coefficient * (x$nday_lt18 - 300)))
 
     # calculate scaling factor by year
     metrics <- c(
