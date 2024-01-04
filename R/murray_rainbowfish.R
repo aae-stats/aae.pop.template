@@ -17,8 +17,8 @@ NULL
 #' @param ntime number of time steps used in population
 #'   simulation. Defaults to \code{50}
 #'
-#' @details The \code{murray_rainbowfish} population model is a
-#'   stage-structured model with 5 classes and includes negative
+#' @details The \code{murray_rainbowfish} population model is an
+#'   age-structured model with 7 classes and includes negative
 #'   density dependence, environmental and demographic
 #'   stochasticity, and optional associations with hydrological
 #'   conditions, instream and riparian habitat, and predators.
@@ -26,7 +26,9 @@ NULL
 #'   The overarching model structure was based the life history of Murray-
 #'   Darling rainbowfish. The primary model parameters (survival, fecundity,
 #'   density dependence) were estimated from observed counts of rainbowfish
-#'   in 5 length classes (0-30 mm, 30-40 mm, 40-50 mm, 50-70 mm, > 70 mm).
+#'   in 5 length classes (0-30 mm, 30-40 mm, 40-50 mm, 50-70 mm, > 70 mm),
+#'   with older fish assumed to follow the parameters for the largest size
+#'   class.
 #'   The effects of hydrology, habitat, and predation were based on
 #'   (minimal) published literature on the species and are subject to
 #'   moderate levels of uncertainty.
@@ -54,9 +56,10 @@ murray_rainbowfish <- function(k = 10000, ntime = 50) {
 # internal function: define species defaults
 template_murray_rainbowfish <- function(k = 10000, ntime = 50) {
 
-  # assume five length classes (in mm): 0-30, 30-40, 40-50, 50-70, >70,
-  #   reproductive for all but the first size class
-  reproductive <- c(2L:5L)
+  # assume seven age classes representing five
+  #   length classes (in mm): 0-30, 30-40, 40-50, 50-70, >70,
+  #   reproductive for all but the first age class
+  reproductive <- c(2L:7L)
 
   # define  a survival function
   survival_gen <- function(mat, ...) {
@@ -77,16 +80,18 @@ template_murray_rainbowfish <- function(k = 10000, ntime = 50) {
   # basic reproduction settings
   sex_ratio <- 0.5
   early_surv <- 0.01
-  fecundity <- c(0, 5000, 7000, 8000, 15000)
+  fecundity <- c(0, 5000, 7000, 8000, 15000, 15000, 15000)
 
   # define base matrix
   # fecundity of ~ 50-300, but can have multiple breeding attempts
   popmat <- rbind(
     sex_ratio * early_surv * fecundity,
-    c(0.1, 0.51, 0,    0,    0),
-    c(0,   0.35, 0.55, 0,    0),
-    c(0,   0,    0.57, 0.60, 0),
-    c(0,   0,    0,    0.54, 0.57)
+    c(0.61, 0,    0,    0,    0,    0,    0),
+    c(0,    0.65, 0,    0,    0,    0,    0),
+    c(0,    0,    0.6,  0,    0,    0,    0),
+    c(0,    0,    0,    0.54, 0,    0,    0),
+    c(0,    0,    0,    0,    0.54, 0,    0),
+    c(0,    0,    0,    0,    0,    0.54,    0)
   )
 
   # define contest competition
@@ -105,6 +110,7 @@ template_murray_rainbowfish <- function(k = 10000, ntime = 50) {
   survival_effects <- function(
     mat,
     x,
+    coldwinter_coefficient = 0.05,
     ...
   ) {
 
@@ -113,8 +119,7 @@ template_murray_rainbowfish <- function(k = 10000, ntime = 50) {
     scale <- 1
 
     # survival requires water temperatures above 10C in winter
-    if (!is.null(x$nday_lt10))
-      scale <- ifelse(x$nday_lt10 > 5, 0.05 * scale, scale)
+    scale <- 1 / (1 + exp(coldwinter_coefficient * (x$nday_lt10 - 40)))
 
     # and negative effects of redfin presence
     if (!is.null(x$redfin))
@@ -145,6 +150,7 @@ template_murray_rainbowfish <- function(k = 10000, ntime = 50) {
     mat,
     x,
     coefs = NULL,
+    warmwater_coefficient = 0.2,
     ...
   ) {
 
@@ -173,8 +179,7 @@ template_murray_rainbowfish <- function(k = 10000, ntime = 50) {
 
     # the number of breeding attempts is linked to the number of
     #    days where water temperature exceeds 20C
-    if (!is.null(x$nday_gt20))
-      scale <- floor(x$nday_gt20 / 30)
+    scale <- 1 / (1 + exp(-warmwater_coefficient * (x$nday_gt20 - 30)))
 
     # and negative effects of gambusia presence
     if (!is.null(x$gambusia))
@@ -218,10 +223,9 @@ template_murray_rainbowfish <- function(k = 10000, ntime = 50) {
   covars <- covariates(
     masks = list(
       aae.pop::combine(
-        aae.pop::survival(popmat, dims = 2L:5L),
-        aae.pop::transition(popmat, dims = 1L:4L)
+        aae.pop::transition(popmat, dims = 1L:6L)
       ),
-      aae.pop::reproduction(popmat, dims = 2L:5L)
+      aae.pop::reproduction(popmat, dims = 2L:7L)
     ),
     funs = list(
       survival_effects,
@@ -233,10 +237,9 @@ template_murray_rainbowfish <- function(k = 10000, ntime = 50) {
   envstoch <- environmental_stochasticity(
     masks = list(
       aae.pop::combine(
-        aae.pop::survival(popmat, dims = 2L:5L),
-        aae.pop::transition(popmat, dims = 1L:4L)
+        aae.pop::transition(popmat, dims = 1L:6L)
       ),
-      aae.pop::reproduction(popmat, dims = 2L:5L)
+      aae.pop::reproduction(popmat, dims = 2L:7L)
     ),
     funs = list(
       survival_gen,
