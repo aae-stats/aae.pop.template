@@ -234,7 +234,7 @@ test_that("simulate works with covariates", {
       covariates = format_covariates(covars$murray_rainbowfish)
     )
   )
-  expect_equal(dim(sim), c(10L, 5L, n + 1))
+  expect_equal(dim(sim), c(10L, 7L, n + 1))
 
   # and with different coefficients for covariate effects
   dyn <- murray_rainbowfish()
@@ -248,7 +248,7 @@ test_that("simulate works with covariates", {
       )
     )
   )
-  expect_equal(dim(sim), c(10L, 5L, n + 1))
+  expect_equal(dim(sim), c(10L, 7L, n + 1))
 
   # simulate from a river blackfish object with covariates
   dyn <- river_blackfish()

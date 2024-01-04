@@ -235,7 +235,7 @@ test_that("rainbowfish template returns correct dynamics object", {
   # simulate from a Murray cod object
   dyn <- murray_rainbowfish()
   sim <- simulate(dyn)
-  expect_equal(dim(sim), c(1L, 5L, 51L))
+  expect_equal(dim(sim), c(1L, 7L, 51L))
 
   # expect most processes to be defined
   expect_null(dyn$dynamics$density_dependence_n)
