@@ -119,15 +119,11 @@ template_murray_rainbowfish <- function(k = 10000, ntime = 50) {
     scale <- 1
 
     # survival requires water temperatures above 10C in winter
-    scale <- 1 / (1 + exp(coldwinter_coefficient * (x$nday_lt10 - 40)))
+    scale <- 1 / (1 + exp(coldwinter_coefficient * (x$nday_lt10 - 100)))
 
     # and negative effects of redfin presence
     if (!is.null(x$redfin))
       scale <- ifelse(x$redfin, 0.5 * scale, scale)
-
-    # and habitat condition for spawning
-    if (!is.null(x$instream_cover))
-      scale <- x$instream_cover * scale
 
     # make sure scale is between 0 and 1
     scale <- ifelse(scale > 1, 1 - eps, ifelse(scale < 0, eps, scale))
