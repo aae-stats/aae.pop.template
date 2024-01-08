@@ -119,9 +119,13 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
     if (!is.null(x$nday_lt5))
       scale <- ifelse(x$nday_lt5 > 5, 0.05 * scale, scale)
 
-    # and habitat condition for shelter and nesting
+    # and habitat condition for shelter and nesting (instream hab first)
     if (!is.null(x$instream_cover))
       scale <- x$instream_cover * scale
+
+    # and habitat condition for shelter and nesting (then overhang)
+    if (!is.null(x$veg_overhang))
+      scale <- x$veg_overhang * scale
 
     # make sure scale is between 0 and 1
     scale <- ifelse(scale > 1, 1 - eps, ifelse(scale < 0, eps, scale))
