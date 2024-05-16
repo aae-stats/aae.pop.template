@@ -187,7 +187,7 @@ template_river_blackfish <- function(k = 1000, ntime = 50) {
 
     # and above 18C for later in spring/summer
     if (!is.null(x$nday_lt18))
-      scale <- 1 / (1 + exp(coldwater_coefficient * (x$nday_lt18 - 300)))
+      scale <- 1 / (1 + exp(coldwater_coefficient * (x$nday_lt18 - 100)))
 
     # calculate scaling factor by year
     metrics <- c(

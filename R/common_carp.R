@@ -199,8 +199,10 @@ template_common_carp <- function(
   recruit_effects <- function(mat, x, variability_param = -0.05, ...) {
 
       # floodplain early survival is approx. 40 times higher
-      #   than in main channel
-      early_surv <- x$floodplain_access * 40
+      #   than in main channel when flows are very high (connected
+      #   to floodplain); steep drop-off as flows reduce within bank
+      early_surv <- 40 / (1 + exp(-8 * (x$floodplain_access - 0.5)))
+      # early_surv <- x$floodplain_access * 40
 
       # and they tend to prefer stable conditions with higher summer flows,
       # so add a negative effect of flow variability on recruitment
@@ -337,6 +339,10 @@ args_common_carp <- function(
              call. = FALSE)
       }
     }
+
+    # force evaluation of n and add so they don't get lost below
+    force(n)
+    force(add)
 
     # define this as a function
     translocate <- function(obj, pop, iter) {

@@ -555,6 +555,10 @@ args_murray_cod <- function(
       }
     }
 
+    # force evaluation of n and add so they don't get lost below
+    force(n)
+    force(add)
+
     # define this as a function
     translocate <- function(obj, pop, iter) {
 
